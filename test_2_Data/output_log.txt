@@ -1,0 +1,17 @@
+Initialize engine version: 4.3.4f1 (e444f76e01cd)
+GfxDevice: creating device client; threaded=1
+Direct3D:
+    Version:  Direct3D 9.0c [nvd3dumx.dll 9.18.13.1100]
+    Renderer: NVIDIA GeForce GTX 560M   
+    Vendor:   NVIDIA
+    VRAM:     1999 MB (via DXGI)
+    Caps:     Shader=30 DepthRT=1 NativeDepth=1 NativeShadow=1 DF16=0 INTZ=1 RAWZ=0 NULL=1 RESZ=0 SlowINTZ=0
+Begin MonoManager ReloadAssembly
+Platform assembly: C:\Users\Kelly\Documents\Unity Projects\Hedgie_Paddle\test_2_Data\Managed\UnityEngine.dll (this message is harmless)
+Loading C:\Users\Kelly\Documents\Unity Projects\Hedgie_Paddle\test_2_Data\Managed\UnityEngine.dll into Unity Child Domain
+Platform assembly: C:\Users\Kelly\Documents\Unity Projects\Hedgie_Paddle\test_2_Data\Managed\Assembly-CSharp.dll (this message is harmless)
+Loading C:\Users\Kelly\Documents\Unity Projects\Hedgie_Paddle\test_2_Data\Managed\Assembly-CSharp.dll into Unity Child Domain
+- Completed reload, in  0.053 seconds
+desktop: 1600x900 60Hz; virtual: 2880x1024 at -1280,0
+<RI> Initializing input.
+<RI> Input initialized.
