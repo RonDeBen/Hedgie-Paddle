@@ -57,5 +57,11 @@ public class Hedgie
         {
             type = value;
         }
+
+        public void setHedgie(Hedgie h){
+            go = h.getObject();
+            location = h.getLocation();
+            type = h.getType();
+        }
 }
 
