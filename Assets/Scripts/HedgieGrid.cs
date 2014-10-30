@@ -42,6 +42,10 @@ public class HedgieGrid {
 		return g;
 	}
 
+	public void pop(int x, int y){
+		h[x,y].pop();
+	}
+
 	public int getDimensions(){
 		return dimensions;
 	} 

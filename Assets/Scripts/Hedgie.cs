@@ -3,65 +3,101 @@ using System.Collections;
 
 public class Hedgie 
 {
-        GameObject go;
-        Vector2 location;
-        int type;
+    private Sprite s;
+    private GameObject go;//gameObject associated with Hedgie
+    private int color, type;//color of the ball, and type of the ball
+    private SpriteRenderer sprender;//use this to turn off hedgies not in use
 
-        public Hedgie()
-        {
-            go = new GameObject();
-            location = new Vector2();
-            type = -1;
-        }
+    public Hedgie()
+    {
+        go = new GameObject();
+        sprender = go.AddComponent<SpriteRenderer>();
+        color = -1;
+        type = -1;
+        s = new Sprite();
+        sprender.enabled = false;
+    }
 
-        public Hedgie(GameObject go, Vector2 location, int type)
-        {
-            this.go = go;
-            this.location = location;
-            this.type = type;
+    public Hedgie(GameObject go, Sprite s, int color, int type)
+    {
+        this.go = go;
+        this.s = s;
+        this.color = color;
+        this.type = type;
+        sprender = go.GetComponent<SpriteRenderer>();
+        sprender.sprite = s;
+        if(color == -1){
+            sprender.enabled = false;
+        }else{
+            sprender.enabled = true;
         }
+    }
 
-        public Hedgie(Hedgie h)
-        {
-            go = h.getObject();
-            location = h.getLocation();
-            type = h.getType();
+    public Hedgie(Hedgie h)
+    {
+        go = h.getObject();
+        s = h.getSprite();
+        color = h.getColor();
+        type = h.getType();
+        sprender = go.GetComponent<SpriteRenderer>();
+        sprender.sprite = s;
+        if(color == -1){
+            sprender.enabled = false;
+        }else{
+            sprender.enabled = true;
         }
+    }
 
-        public GameObject getObject()
-        {
-            return go;
-        }
+    public GameObject getObject(){
+        return go;
+    }
 
-        public Vector2 getLocation()
-        {
-            return location;
-        }
+    public Sprite getSprite(){
+        return s;
+    }
 
-        public int getType()
-        {
-            return type;
-        }
+    public int getColor(){
+        return color;
+    }
 
-        public void setObject(GameObject value)
-        {
-            go = value;
-        }
+    public int getType(){
+        return type;
+    }
 
-        public void setLocation(Vector2 value)
-        {
-            location = value;
-        }
+    public void setObject(GameObject go){
+        this.go = go;
+    }
 
-        public void setType(int value)
-        {
-            type = value;
-        }
+    public void setSprite(Sprite s){
+        this.s = s;
+    }
 
-        public void setHedgie(Hedgie h){
-            go = h.getObject();
-            location = h.getLocation();
-            type = h.getType();
+    public void setColor(int color){
+        this.color = color;
+    }
+
+    public void setType(int type){
+        this.type = type;
+    }
+
+    public void setHedgie(Hedgie h){
+        go = h.getObject();
+        s = h.getSprite();
+        color = h.getColor();
+        type = h.getType();
+        sprender = go.GetComponent<SpriteRenderer>();
+        sprender.sprite = s;
+        if(color == -1){
+            sprender.enabled = false;
+        }else{
+            sprender.enabled = true;
         }
+    }
+
+    public void pop(){
+        type = -1;
+        color = -1;
+        sprender.enabled = false;
+    }
 }
 

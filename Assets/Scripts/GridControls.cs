@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent (typeof (HedgieSprites))]
 public class GridControls : MonoBehaviour {
 
 	public struct Coords{//lets me refer to various things as x,y coordinates
@@ -12,8 +13,8 @@ public class GridControls : MonoBehaviour {
 		}
 	}
 
-	public GameObject[] types;//array holding all hedgie prefabs
 	public Camera cam;//the main camera
+    public GameObject HedgieObject;
 	public int dimensions, innerBalls;
 	public float rotationTime, movSpeed;//time for rotation and speed of hedgie travel
 	private bool clockwise, counterclockwise, moving;//are true when an action is occuring
@@ -22,14 +23,27 @@ public class GridControls : MonoBehaviour {
 	private Vector2 movStartPos, movEndPos;//position within the gamespace where you start and end
 
 	private HedgieGrid hg;//check the HedgieGrid class; this holds all the sweet grid juice
-
+    private HedgieSprites hsprites;
 	void Start(){
 		hg = new HedgieGrid(dimensions, innerBalls, cam);
+        hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
+        InstantiateHedgies();
         SpawnOuterBalls();
         SpawnInnerBalls(innerBalls);
 	}
 
-
+    private void InstantiateHedgies(){
+        //change this shit
+        Vector2 g;
+        for(int x = 0; x < dimensions; x++){
+            for(int y = 0; y < dimensions; y++){
+                g = hg.getGrid(x, y);
+                GameObject go = (GameObject)Instantiate(HedgieObject, new Vector3(g.x, g.y, 0), Quaternion.identity);
+                Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0,0), -1, -1);
+                hg.setHedgie(x, y, defaultHedgie);
+            }
+        }
+    }
     //switch this to after hedgies explode
     /*void Update(){
         if (hg.getBallCount() < 1){
@@ -37,16 +51,15 @@ public class GridControls : MonoBehaviour {
         }
     }*/
 
-	//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@~~~~change this for special hedgies~~~~@@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    //change this if you want to lean towards certain hedgies
 	private void SpawnBall(int x, int y)
     {
-        int ball = Random.Range(0, types.Length);
+        int type = Random.Range(0, hsprites.getLength() - 1);
+        int color = Random.Range(0, hsprites.getSheetLength(type));
         Vector2 g = hg.getGrid(x, y);
-        GameObject go = (GameObject)Instantiate(types[ball], new Vector3(g.x, g.y, 0), Quaternion.identity);
-        hg.getHedgie(x, y).setObject(go);
-        hg.getHedgie(x, y).setType(ball);
+        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type);
+        hg.getHedgie(x, y).setHedgie(spawnHedgie);
+        print("Type: " + type + " Color: " + color);
     }
 
     private void SpawnOuterBalls()
@@ -73,7 +86,7 @@ public class GridControls : MonoBehaviour {
         {
             x = Random.Range(0, dimensions / 2) + Random.Range(0, dimensions / 2) + 1;
             y = Random.Range(0, dimensions / 2) + Random.Range(0, dimensions / 2) + 1;
-            if (hg.getHedgie(x, y).getType() == -1)
+            if (hg.getHedgie(x, y).getColor() == -1)
             {
                 counter++;
                 SpawnBall(x, y);
@@ -84,24 +97,24 @@ public class GridControls : MonoBehaviour {
                     {
                         if ((x+k) >= 1 && (x+k) <= dimensions - 2)
                         {
-                            if (hg.getHedgie(x, y).getType() == hg.getHedgie(x + k, y).getType())
+                            if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
                             {
-                                pop(hg.getHedgie(x + k, y));
+                                hg.pop(x + k, y);
                                 counter--;
                             }
                         }
                         if ((y + k) >= 1 && (y + k) <= dimensions - 2)
                         {
-                            if (hg.getHedgie(x, y).getType() == hg.getHedgie(x, y + k).getType())
+                            if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
                             {
-                                pop(hg.getHedgie(x, y + k));
+                                hg.pop(x, y + k);
                                 counter--;
                             }
                         }
 
                     }
                     
-                    pop(hg.getHedgie(x, y));
+                    hg.pop(x, y);
                     counter--;
                 }
             }
@@ -270,13 +283,13 @@ public class GridControls : MonoBehaviour {
 
     private int checkRight(int y)
     {
-        if (hg.getHedgie(1, y).getType() != -1)//if there's a ball in front of the ball
+        if (hg.getHedgie(1, y).getColor() != -1)//if there's a ball in front of the ball
             return -1;
         else
         {
             for (int k = 2; k < dimensions - 1; k++)
             {
-                if (hg.getHedgie(k, y).getType() != -1) 
+                if (hg.getHedgie(k, y).getColor() != -1) 
                     return k - 1;
             }
             return -1;
@@ -285,13 +298,13 @@ public class GridControls : MonoBehaviour {
 
     private int checkLeft(int y)
     {
-        if (hg.getHedgie(dimensions - 2, y).getType() != -1)//if there's a ball in front of the ball you're shooting
+        if (hg.getHedgie(dimensions - 2, y).getColor() != -1)//if there's a ball in front of the ball you're shooting
             return -1;
         else
         {
             for (int k = dimensions - 3; k > 0; k--)//checks sequentially 
             {
-                if (hg.getHedgie(k, y).getType() != -1)
+                if (hg.getHedgie(k, y).getColor() != -1)
                     return k + 1;
             }
             return -1;//no balls on that row
@@ -300,13 +313,13 @@ public class GridControls : MonoBehaviour {
 
     private int checkUp(int x)
     {
-        if (hg.getHedgie(x, 1).getType() != -1)//if there's a ball in front of the ball
+        if (hg.getHedgie(x, 1).getColor() != -1)//if there's a ball in front of the ball
             return -1;
         else
         {
             for (int k = 2; k < dimensions - 1; k++)//checks sequentially above where was clicked
             {
-                if (hg.getHedgie(x, k).getType() != -1)
+                if (hg.getHedgie(x, k).getColor() != -1)
                     return k - 1;//returns the y value before the first ball encountered 
             }
             return -1;
@@ -315,13 +328,13 @@ public class GridControls : MonoBehaviour {
 
     private int checkDown(int x)
     {
-        if (hg.getHedgie(x, dimensions - 2).getType() != -1)//if there's a ball in front of the ball
+        if (hg.getHedgie(x, dimensions - 2).getColor() != -1)//if there's a ball in front of the ball
             return -1;
         else
         {
             for (int k = dimensions - 3; k > 0; k--)//checks sequentially below where was clicked 
             {
-                if (hg.getHedgie(x, k).getType() != -1)
+                if (hg.getHedgie(x, k).getColor() != -1)
                     return k + 1;//returns the y value before the first ball encountered
             }
             return -1;
@@ -337,22 +350,22 @@ public class GridControls : MonoBehaviour {
         {
             if ((x + k) >= 1 && (x + k) <= dimensions - 2)
             {
-                if (hg.getHedgie(x, y).getType() == hg.getHedgie(x + k, y).getType())
+                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
                 {
-                    pop(hg.getHedgie(x + k, y));
+                    hg.pop(x + k, y);
                     hg.ballDecrement();
                 }
             }
             if ((y + k) >= 1 && (y + k) <= dimensions - 2)
             {
-                if (hg.getHedgie(x, y).getType() == hg.getHedgie(x, y + k).getType())
+                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
                 {
-                    pop(hg.getHedgie(x, y + k));
+                    hg.pop(x, y + k);
                     hg.ballDecrement();
                 }
             }
         }
-        pop(hg.getHedgie(x, y));
+        hg.pop(x, y);
         hg.ballDecrement();
     }
 
@@ -364,14 +377,14 @@ public class GridControls : MonoBehaviour {
         {
             if ((x + k) >= 1 && (x + k) <= dimensions - 2)
             {
-                if (hg.getHedgie(x, y).getType() == hg.getHedgie(x + k, y).getType())
+                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
                 {
                     return true;
                 }
             }
             if ((y + k) >= 1 && (y + k) <= dimensions - 2)
             {
-                if (hg.getHedgie(x, y).getType() == hg.getHedgie(x, y + k).getType())
+                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
                 {
                     return true;
                 }
@@ -380,12 +393,5 @@ public class GridControls : MonoBehaviour {
         }
 
         return false;
-    }
-
-    //may need reference for some reason
-    private void pop(Hedgie hedge)
-    {
-        Destroy(hedge.getObject());
-        hedge = new Hedgie();
     }
 }
