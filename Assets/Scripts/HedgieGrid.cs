@@ -2,7 +2,7 @@
 using System.Collections;
 
 public class HedgieGrid {
-	private int dimensions;//grid size ex. 10x10
+	private int dimensions;//grid size ex. 10 makes a 10x10 grid
 	private int ballCount;//number of balls in the center
 	private Vector2 tile;//width and height of each rectangle in the grid
 	private Vector2[,] grid;//the centers of each tile of the grid
@@ -25,6 +25,12 @@ public class HedgieGrid {
 
         float height = 2f * cam.orthographicSize;
         float width = height * cam.aspect;
+
+        if(height > width){
+        	float temp = height;
+        	height = width;
+        	width = temp;
+        }
 
         tile.x = width / dimensions;
         tile.y = height / dimensions;
@@ -106,11 +112,18 @@ public class HedgieGrid {
 	}
 
 	public void setHedgie(int x, int y, Hedgie value){
-		h[x,y] = value;
+		h[x,y].setHedgie(value);
 	}
 
 	public void setHedgie(Hedgie[,] values){
 		h = values;
 	}
 
+	public void transmogrify (int x, int y, Hedgie hedge){
+		h[x,y].transmogrify(hedge);
+	}
+
+	public void transmogrify(int x, int y, Sprite s, int color, int type){
+		h[x,y].transmogrify(s, color, type);
+	}
 }

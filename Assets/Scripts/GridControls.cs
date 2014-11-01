@@ -4,33 +4,33 @@ using System.Collections;
 [RequireComponent (typeof (HedgieSprites))]
 public class GridControls : MonoBehaviour {
 
-	public struct Coords{//lets me refer to various things as x,y coordinates
-		public int x, y;
+    public struct Coords{//lets me refer to various things as x,y coordinates
+        public int x, y;
 
-		public Coords(int x, int y){
-			this.x = x;
-			this.y = y;
-		}
-	}
+        public Coords(int x, int y){
+            this.x = x;
+            this.y = y;
+        }
+    }
 
-	public Camera cam;//the main camera
+    public Camera cam;//the main camera
     public GameObject HedgieObject;
-	public int dimensions, innerBalls;
-	public float rotationTime, movSpeed;//time for rotation and speed of hedgie travel
-	private bool clockwise, counterclockwise, moving;//are true when an action is occuring
-	private float clockStart;//holds when the timer starts
-	private Coords movStart, movEnd;//coordinates within the grid dimensions where you start and end
-	private Vector2 movStartPos, movEndPos;//position within the gamespace where you start and end
-
-	private HedgieGrid hg;//check the HedgieGrid class; this holds all the sweet grid juice
+    public int dimensions, innerBalls;
+    public float rotationTime, movSpeed;//time for rotation and speed of hedgie travel
+    private bool clockwise, counterclockwise, moving, spinning;//are true when an action is occuring
+    private float clockStart, spinClockStart;//holds when the timer starts
+    private Coords movStart, movEnd;//coordinates within the grid dimensions where you start and end
+    private Vector2 movStartPos, movEndPos;//position within the gamespace where you start and end
+    private Quaternion qStart, qEnd;
+    private HedgieGrid hg;//check the HedgieGrid class; this holds all the sweet grid juice
     private HedgieSprites hsprites;
-	void Start(){
-		hg = new HedgieGrid(dimensions, innerBalls, cam);
+    void Start(){
+        hg = new HedgieGrid(dimensions, innerBalls, cam);
         hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
         InstantiateHedgies();
         SpawnOuterBalls();
         SpawnInnerBalls(innerBalls);
-	}
+    }
 
     private void InstantiateHedgies(){
         //change this shit
@@ -44,22 +44,14 @@ public class GridControls : MonoBehaviour {
             }
         }
     }
-    //switch this to after hedgies explode
-    /*void Update(){
-        if (hg.getBallCount() < 1){
-            Restart();
-        }
-    }*/
 
     //change this if you want to lean towards certain hedgies
-	private void SpawnBall(int x, int y)
+    private void SpawnBall(int x, int y)
     {
         int type = Random.Range(0, hsprites.getLength() - 1);
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Vector2 g = hg.getGrid(x, y);
         Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type);
-        hg.getHedgie(x, y).setHedgie(spawnHedgie);
-        print("Type: " + type + " Color: " + color);
+        hg.transmogrify(x, y, spawnHedgie);
     }
 
     private void SpawnOuterBalls()
@@ -130,7 +122,7 @@ public class GridControls : MonoBehaviour {
         SpawnInnerBalls(innerBalls);
         hg.setBallCount(innerBalls);
     }
-	void FixedUpdate(){
+    void FixedUpdate(){
         if(counterclockwise){
 
             float timeSinceStarted = Time.time - clockStart;
@@ -162,10 +154,10 @@ public class GridControls : MonoBehaviour {
                     Hedgie top = new Hedgie(hg.getHedgie(dimensions - k - 2, dimensions - 1));
                     Hedgie left = new Hedgie(hg.getHedgie(0, dimensions - k - 2));
 
-                    hg.getHedgie(k + 1, 0).setHedgie(left);//bottom is given left
-                    hg.getHedgie(dimensions - 1, k + 1).setHedgie(bottom);//right is given bottom
-                    hg.getHedgie(dimensions - k - 2, dimensions - 1).setHedgie(right);//top is given right
-                    hg.getHedgie(0, dimensions - 2 - k).setHedgie(top);//left is given top
+                    hg.setHedgie(k + 1, 0, left);//bottom is given left
+                    hg.setHedgie(dimensions - 1, k + 1, bottom);//right is given bottom
+                    hg.setHedgie(dimensions - k - 2, dimensions - 1, right);//top is given right
+                    hg.setHedgie(0, dimensions - 2 - k, top);//left is given top
                 }
             }
         }
@@ -199,10 +191,10 @@ public class GridControls : MonoBehaviour {
                     Hedgie top = new Hedgie(hg.getHedgie(dimensions - k - 2, dimensions - 1));
                     Hedgie left = new Hedgie(hg.getHedgie(0, dimensions - k - 2));
 
-                    hg.getHedgie(k + 1, 0).setHedgie(right);//bottom is given right
-                    hg.getHedgie(dimensions - 1, k + 1).setHedgie(top);//right is given top
-                    hg.getHedgie(dimensions - k - 2, dimensions - 1).setHedgie(left);//top is given left
-                    hg.getHedgie(0, dimensions - 2 - k).setHedgie(bottom);//left is given bottom
+                    hg.setHedgie(k + 1, 0, right);//bottom is given right
+                    hg.setHedgie(dimensions - 1, k + 1, top);//right is given top
+                    hg.setHedgie(dimensions - k - 2, dimensions - 1, left);//top is given left
+                    hg.setHedgie(0, dimensions - 2 - k, bottom);//left is given bottom
                 }
             }
         }
@@ -214,14 +206,22 @@ public class GridControls : MonoBehaviour {
 
             if(fracJourney >= 1.0f){
                 hg.ballIncrement();
-                hg.setHedgie(movEnd.x, movEnd.y, new Hedgie(hg.getHedgie(movStart.x, movStart.y)));
-                hg.setHedgie(movStart.x, movStart.y, new Hedgie());
+                hg.transmogrify(movEnd.x, movEnd.y, hg.getHedgie(movStart.x, movStart.y));
+                hg.getHedgie(movStart.x, movStart.y).getObject().transform.position = hg.getGrid(movStart.x, movStart.y);
                 SpawnBall(movStart.x, movStart.y);
-
                 if (checkConnect(movEnd.x,movEnd.y))
                     explode(movEnd.x, movEnd.y);
 
                 moving = false;
+            }
+        }
+        if(spinning){
+            float timeSinceRotation = Time.time - spinClockStart;
+            float complete = timeSinceRotation / rotationTime;
+            for(int x = 0; x < dimensions; x++){
+                for(int y = 0; y < dimensions; y++){
+                    hg.getHedgie(x,y).getObject().transform.rotation = Quaternion.Slerp(qStart, qEnd, complete);
+                }
             }
         }
     }
@@ -232,30 +232,30 @@ public class GridControls : MonoBehaviour {
         //print(click);
         if (click.x == 0 && click.y != 0 && click.y != dimensions - 1)//if the left corner is clicked
         {
-        	int check = checkRight(click.y);
+            int check = checkRight(click.y);
             if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(check, click.y), 1f);
+                move(new Coords(click.x, click.y), new Coords(check, click.y));
         }
 
         if (click.x == dimensions - 1 && click.y != 0 && click.y != dimensions - 1)//if the right corner is clicked
         {
-        	int check = checkLeft(click.y);
+            int check = checkLeft(click.y);
             if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(check, click.y),1f);
+                move(new Coords(click.x, click.y), new Coords(check, click.y));
         }
 
         if (click.y == 0 && click.x != 0 && click.x != dimensions - 1)//if the bottom corner is clicked
         {
-        	int check = checkUp(click.x);
+            int check = checkUp(click.x);
             if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(click.x, check),1f);
+                move(new Coords(click.x, click.y), new Coords(click.x, check));
         }
 
         if (click.y == dimensions - 1 && click.x != 0 && click.x != dimensions - 1)//if the top corner is clicked
         {
-        	int check = checkDown(click.x);
+            int check = checkDown(click.x);
             if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(click.x, check),1f);
+                move(new Coords(click.x, click.y), new Coords(click.x, check));
         }
     }
 
@@ -271,7 +271,14 @@ public class GridControls : MonoBehaviour {
             clockwise = true;
     }
 
-    private void move(Coords start, Coords end, float time)
+    public void spinHedgie(Quaternion qStart, Quaternion qEnd){
+        this.qStart = qStart;
+        this.qEnd = qEnd;
+        spinClockStart = Time.time;
+        spinning = true;
+    }
+
+    private void move(Coords start, Coords end)
     {
         movStart = start;
         movEnd = end;
@@ -367,6 +374,9 @@ public class GridControls : MonoBehaviour {
         }
         hg.pop(x, y);
         hg.ballDecrement();
+        if(hg.getBallCount() < 1){
+            Restart();
+        }
     }
 
     

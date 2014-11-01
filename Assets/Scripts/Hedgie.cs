@@ -15,11 +15,14 @@ public class Hedgie
         color = -1;
         type = -1;
         s = new Sprite();
-        sprender.enabled = false;
+        sprender.enabled = true;
     }
 
     public Hedgie(GameObject go, Sprite s, int color, int type)
     {
+        if(go == null){
+            go = new GameObject();
+        }
         this.go = go;
         this.s = s;
         this.color = color;
@@ -86,6 +89,30 @@ public class Hedgie
         color = h.getColor();
         type = h.getType();
         sprender = go.GetComponent<SpriteRenderer>();
+        sprender.sprite = s;
+        if(color == -1){
+            sprender.enabled = false;
+        }else{
+            sprender.enabled = true;
+        }
+    }
+
+    public void transmogrify(Hedgie h){
+        s = h.getSprite();
+        color = h.getColor();
+        type = h.getType();
+        sprender.sprite = s;
+        if(color == -1){
+            sprender.enabled = false;
+        }else{
+            sprender.enabled = true;
+        }
+    }
+
+    public void transmogrify(Sprite s, int color, int type){
+        this.s = s;
+        this.color = color;
+        this.type = type;
         sprender.sprite = s;
         if(color == -1){
             sprender.enabled = false;

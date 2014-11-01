@@ -14,7 +14,6 @@ public class RepositionCam : MonoBehaviour {
         float offsetX = transform.position.x + (0f - newPosition.x);
         float offsetY = transform.position.y + (0f - newPosition.y);
         transform.position = new Vector3(offsetX, offsetY, -10);
-        
 	}
 	
 	// Update is called once per frame
