@@ -8,22 +8,14 @@ public class PlayerController : MonoBehaviour {
 	private RuntimePlatform platform = Application.platform;
 	private GridControls gc;
 	private Vector2 touchStart, touchEnd;
-    private ScreenOrientation orient;
+    //private ScreenOrientation orient;
 	void Start () {
 		gc = GetComponent<GridControls>() as GridControls;
-        orient = Screen.orientation;
+        //orient = Screen.orientation;
 	}
 	
 	void Update()
     {
-        /*if(orient != Screen.orientation){
-            if(Screen.orientation == ScreenOrientation.LandscapeLeft){
-                gc.spinHedgie(Quaternion.Euler(Vector3.up), Quaternion.Euler(Vector3.down));
-            }
-            else{
-                gc.spinHedgie(Quaternion.Euler(Vector3.down), Quaternion.Euler(Vector3.up));
-            } 
-        }*/
         if(!gc.InMotion()){
             if (platform == RuntimePlatform.Android || platform == RuntimePlatform.IPhonePlayer)
             {
