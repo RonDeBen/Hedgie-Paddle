@@ -2,6 +2,7 @@
 using System.Collections;
 
 [RequireComponent (typeof (HedgieSprites))]
+[RequireComponent (typeof (SpawnWorkflow))]
 public class GridControls : MonoBehaviour {
 
     public struct Coords{//lets me refer to various things as x,y coordinates
@@ -23,9 +24,17 @@ public class GridControls : MonoBehaviour {
     private Vector2 movStartPos, movEndPos;//position within the gamespace where you start and end
     private Quaternion qStart, qEnd;
     private HedgieGrid hg;//check the HedgieGrid class; this holds all the sweet grid juice
+    private Taps taps;
+    private Pops pops;
     private HedgieSprites hsprites;
+    private SpawnWorkflow sw;
+
     void Start(){
         hg = new HedgieGrid(dimensions, innerBalls, cam);
+        taps = new Taps(hg);
+        pops = new Pops(hg);
+        sw = GetComponent<SpawnWorkflow>() as SpawnWorkflow;
+        sw.sumTotal();
         hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
         InstantiateHedgies();
         SpawnOuterBalls();
@@ -39,7 +48,7 @@ public class GridControls : MonoBehaviour {
             for(int y = 0; y < dimensions; y++){
                 g = hg.getGrid(x, y);
                 GameObject go = (GameObject)Instantiate(HedgieObject, new Vector3(g.x, g.y, 0), Quaternion.identity);
-                Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0,0), -1, -1);
+                Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0,0), -1, -1, 1);
                 hg.setHedgie(x, y, defaultHedgie);
             }
         }
@@ -48,9 +57,17 @@ public class GridControls : MonoBehaviour {
     //change this if you want to lean towards certain hedgies
     private void SpawnBall(int x, int y)
     {
-        int type = Random.Range(0, hsprites.getLength() - 1);
+        int type = sw.pickHedgieType();
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type);
+        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
+        hg.transmogrify(x, y, spawnHedgie);
+        hg.ballIncrement();
+    }
+
+    private void SpawnOuterBall(int x, int y){
+        int type = sw.pickHedgieType();
+        int color = Random.Range(0, hsprites.getSheetLength(type));
+        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
     }
 
@@ -59,56 +76,28 @@ public class GridControls : MonoBehaviour {
         for (int d = dimensions-2; d > 0; d--)
         {
             //left side
-            SpawnBall(0,d);
+            SpawnOuterBall(0,d);
             //right side
-            SpawnBall(dimensions-1, d);
+            SpawnOuterBall(dimensions-1, d);
 
             //bottom side
-            SpawnBall(d, 0);
+            SpawnOuterBall(d, 0);
             //top side
-            SpawnBall(d, dimensions - 1);
+            SpawnOuterBall(d, dimensions - 1);
         }
     }
 
     private void SpawnInnerBalls(int balls)
     {
-        int counter, x, y;
-        counter = 0;
-        while (counter < balls)
+        int x, y;
+        while (hg.getBallCount() < balls)
         {
             x = Random.Range(0, dimensions / 2) + Random.Range(0, dimensions / 2) + 1;
             y = Random.Range(0, dimensions / 2) + Random.Range(0, dimensions / 2) + 1;
             if (hg.getHedgie(x, y).getColor() == -1)
             {
-                counter++;
-                SpawnBall(x, y);
-
-                if (checkConnect(x, y))
-                {
-                    for (int k = -1; k <= 1; k += 2)
-                    {
-                        if ((x+k) >= 1 && (x+k) <= dimensions - 2)
-                        {
-                            if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
-                            {
-                                hg.pop(x + k, y);
-                                counter--;
-                            }
-                        }
-                        if ((y + k) >= 1 && (y + k) <= dimensions - 2)
-                        {
-                            if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
-                            {
-                                hg.pop(x, y + k);
-                                counter--;
-                            }
-                        }
-
-                    }
-                    
-                    hg.pop(x, y);
-                    counter--;
-                }
+                SpawnBall(x,y);
+                pops.Advent(x,y);
             }
         }
     }
@@ -116,11 +105,6 @@ public class GridControls : MonoBehaviour {
 
     public bool InMotion(){
         return (moving || counterclockwise || clockwise);
-    }
-
-    public void Restart(){
-        SpawnInnerBalls(innerBalls);
-        hg.setBallCount(innerBalls);
     }
     void FixedUpdate(){
         if(counterclockwise){
@@ -208,9 +192,10 @@ public class GridControls : MonoBehaviour {
                 hg.ballIncrement();
                 hg.transmogrify(movEnd.x, movEnd.y, hg.getHedgie(movStart.x, movStart.y));
                 hg.getHedgie(movStart.x, movStart.y).getObject().transform.position = hg.getGrid(movStart.x, movStart.y);
-                SpawnBall(movStart.x, movStart.y);
-                if (checkConnect(movEnd.x,movEnd.y))
-                    explode(movEnd.x, movEnd.y);
+                SpawnOuterBall(movStart.x, movStart.y);
+
+                pops.Advent(movEnd.x, movEnd.y);
+                checkRestart(innerBalls);
 
                 moving = false;
             }
@@ -223,39 +208,6 @@ public class GridControls : MonoBehaviour {
                     hg.getHedgie(x,y).getObject().transform.rotation = Quaternion.Slerp(qStart, qEnd, complete);
                 }
             }
-        }
-    }
-
-    public void checkTouch(Vector3 pos){
-        Vector3 wp = Camera.main.ScreenToWorldPoint(pos);
-        Coords click = new Coords((int)(wp.x / hg.getTile().x), (int)(wp.y / hg.getTile().y));
-        //print(click);
-        if (click.x == 0 && click.y != 0 && click.y != dimensions - 1)//if the left corner is clicked
-        {
-            int check = checkRight(click.y);
-            if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(check, click.y));
-        }
-
-        if (click.x == dimensions - 1 && click.y != 0 && click.y != dimensions - 1)//if the right corner is clicked
-        {
-            int check = checkLeft(click.y);
-            if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(check, click.y));
-        }
-
-        if (click.y == 0 && click.x != 0 && click.x != dimensions - 1)//if the bottom corner is clicked
-        {
-            int check = checkUp(click.x);
-            if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(click.x, check));
-        }
-
-        if (click.y == dimensions - 1 && click.x != 0 && click.x != dimensions - 1)//if the top corner is clicked
-        {
-            int check = checkDown(click.x);
-            if (check != -1)
-                move(new Coords(click.x, click.y), new Coords(click.x, check));
         }
     }
 
@@ -278,6 +230,15 @@ public class GridControls : MonoBehaviour {
         spinning = true;
     }
 
+    public void checkTouch(Vector3 pos){
+        Vector3 wp = Camera.main.ScreenToWorldPoint(pos);
+        Coords click = new Coords((int)(wp.x / hg.getTile().x), (int)(wp.y / hg.getTile().y));
+        Vector2 end = taps.Here(click.x, click.y);
+        if(end != new Vector2(-1,-1)){
+            move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+        }
+    }
+
     private void move(Coords start, Coords end)
     {
         movStart = start;
@@ -288,120 +249,8 @@ public class GridControls : MonoBehaviour {
         clockStart = Time.time;
     } 
 
-    private int checkRight(int y)
-    {
-        if (hg.getHedgie(1, y).getColor() != -1)//if there's a ball in front of the ball
-            return -1;
-        else
-        {
-            for (int k = 2; k < dimensions - 1; k++)
-            {
-                if (hg.getHedgie(k, y).getColor() != -1) 
-                    return k - 1;
-            }
-            return -1;
-        }
-    }
-
-    private int checkLeft(int y)
-    {
-        if (hg.getHedgie(dimensions - 2, y).getColor() != -1)//if there's a ball in front of the ball you're shooting
-            return -1;
-        else
-        {
-            for (int k = dimensions - 3; k > 0; k--)//checks sequentially 
-            {
-                if (hg.getHedgie(k, y).getColor() != -1)
-                    return k + 1;
-            }
-            return -1;//no balls on that row
-        }
-    }
-
-    private int checkUp(int x)
-    {
-        if (hg.getHedgie(x, 1).getColor() != -1)//if there's a ball in front of the ball
-            return -1;
-        else
-        {
-            for (int k = 2; k < dimensions - 1; k++)//checks sequentially above where was clicked
-            {
-                if (hg.getHedgie(x, k).getColor() != -1)
-                    return k - 1;//returns the y value before the first ball encountered 
-            }
-            return -1;
-        }
-    }
-
-    private int checkDown(int x)
-    {
-        if (hg.getHedgie(x, dimensions - 2).getColor() != -1)//if there's a ball in front of the ball
-            return -1;
-        else
-        {
-            for (int k = dimensions - 3; k > 0; k--)//checks sequentially below where was clicked 
-            {
-                if (hg.getHedgie(x, k).getColor() != -1)
-                    return k + 1;//returns the y value before the first ball encountered
-            }
-            return -1;
-        }
-    }
-
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    //@@@@@@@@@@@~~~~Probably change this for splitters~~~~@@@@@@@@@@@@@
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    private void explode(int x, int y)
-    {
-        for (int k = -1; k <= 1; k += 2)
-        {
-            if ((x + k) >= 1 && (x + k) <= dimensions - 2)
-            {
-                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
-                {
-                    hg.pop(x + k, y);
-                    hg.ballDecrement();
-                }
-            }
-            if ((y + k) >= 1 && (y + k) <= dimensions - 2)
-            {
-                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
-                {
-                    hg.pop(x, y + k);
-                    hg.ballDecrement();
-                }
-            }
-        }
-        hg.pop(x, y);
-        hg.ballDecrement();
-        if(hg.getBallCount() < 1){
-            Restart();
-        }
-    }
-
-    
-
-    private bool checkConnect(int x, int y)
-    {
-        for (int k = -1; k <= 1; k += 2)
-        {
-            if ((x + k) >= 1 && (x + k) <= dimensions - 2)
-            {
-                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x + k, y).getColor())
-                {
-                    return true;
-                }
-            }
-            if ((y + k) >= 1 && (y + k) <= dimensions - 2)
-            {
-                if (hg.getHedgie(x, y).getColor() == hg.getHedgie(x, y + k).getColor())
-                {
-                    return true;
-                }
-            }
-            
-        }
-
-        return false;
+    public void checkRestart(int newBalls){
+        if(hg.getBallCount() <= 0)
+            SpawnInnerBalls(newBalls);    
     }
 }

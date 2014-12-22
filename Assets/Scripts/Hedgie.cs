@@ -1,11 +1,11 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class Hedgie 
 {
     private Sprite s;
     private GameObject go;//gameObject associated with Hedgie
-    private int color, type;//color of the ball, and type of the ball
+    private int color, type, health;//color of the ball, and type of the ball
     private SpriteRenderer sprender;//use this to turn off hedgies not in use
 
     public Hedgie()
@@ -18,7 +18,7 @@ public class Hedgie
         sprender.enabled = true;
     }
 
-    public Hedgie(GameObject go, Sprite s, int color, int type)
+    public Hedgie(GameObject go, Sprite s, int color, int type, int health)
     {
         if(go == null){
             go = new GameObject();
@@ -27,6 +27,7 @@ public class Hedgie
         this.s = s;
         this.color = color;
         this.type = type;
+        this.health = health;
         sprender = go.GetComponent<SpriteRenderer>();
         sprender.sprite = s;
         if(color == -1){
@@ -67,6 +68,10 @@ public class Hedgie
         return type;
     }
 
+    public int getHealth(){
+        return health;
+    }
+
     public void setObject(GameObject go){
         this.go = go;
     }
@@ -81,6 +86,10 @@ public class Hedgie
 
     public void setType(int type){
         this.type = type;
+    }
+
+    public void setHealth(int health){
+        this.health = health;
     }
 
     public void setHedgie(Hedgie h){
@@ -121,10 +130,15 @@ public class Hedgie
         }
     }
 
-    public void pop(){
-        type = -1;
-        color = -1;
-        sprender.enabled = false;
+    public int pop(){
+        health--;
+        if(health <= 0){
+            type = -1;
+            color = -1;
+            sprender.enabled = false;
+            return -1;
+        }
+        return 0;
     }
 }
 

@@ -9,7 +9,7 @@ public class HedgieGrid {
 	private Hedgie[,] h;//the hedgie in each tile of the grid
 
 	public HedgieGrid (int dimensions, int innerBalls, Camera cam){
-		ballCount = innerBalls;
+		ballCount = 0;
 		this.dimensions = dimensions;
 		grid = new Vector2[dimensions, dimensions];
 		h = new Hedgie[dimensions, dimensions];
@@ -49,7 +49,8 @@ public class HedgieGrid {
 	}
 
 	public void pop(int x, int y){
-		h[x,y].pop();
+		ballCount += h[x,y].pop();
+		Debug.Log(ballCount);
 	}
 
 	public int getDimensions(){
@@ -90,6 +91,18 @@ public class HedgieGrid {
 
 	public Hedgie getHedgie(int x, int y){
 		return h[x,y];
+	}
+
+	public int getColor(int x, int y){
+		return h[x,y].getColor();
+	}
+
+	public int getType(int x, int y){
+		return h[x,y].getType();
+	}
+
+	public int getLength(){
+		return dimensions;
 	}
 
 	public void setDimensions(int value){
