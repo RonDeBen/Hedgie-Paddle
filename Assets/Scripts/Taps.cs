@@ -25,7 +25,7 @@ public class Taps{
 
 	public Taps(HedgieGrid hg){
 		this.hg = hg;
-		dimensions = hg.getLength();
+		dimensions = hg.getDimensions();
 	}
 
 

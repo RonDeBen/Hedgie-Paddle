@@ -30,12 +30,12 @@ public class GridControls : MonoBehaviour {
     private SpawnWorkflow sw;
 
     void Start(){
-        hg = new HedgieGrid(dimensions, innerBalls, cam);
+        hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
+        hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
         taps = new Taps(hg);
         pops = new Pops(hg);
         sw = GetComponent<SpawnWorkflow>() as SpawnWorkflow;
         sw.sumTotal();
-        hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
         InstantiateHedgies();
         SpawnOuterBalls();
         SpawnInnerBalls(innerBalls);
@@ -58,6 +58,7 @@ public class GridControls : MonoBehaviour {
     private void SpawnBall(int x, int y)
     {
         int type = sw.pickHedgieType();
+        //int type = 2;
         int color = Random.Range(0, hsprites.getSheetLength(type));
         Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
@@ -66,6 +67,7 @@ public class GridControls : MonoBehaviour {
 
     private void SpawnOuterBall(int x, int y){
         int type = sw.pickHedgieType();
+        //int type = 2;
         int color = Random.Range(0, hsprites.getSheetLength(type));
         Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
@@ -252,5 +254,9 @@ public class GridControls : MonoBehaviour {
     public void checkRestart(int newBalls){
         if(hg.getBallCount() <= 0)
             SpawnInnerBalls(newBalls);    
+    }
+
+    public HedgieSprites getHedgieSprites(){
+        return hsprites;
     }
 }

@@ -7,11 +7,12 @@ public class Hedgie
     private GameObject go;//gameObject associated with Hedgie
     private int color, type, health;//color of the ball, and type of the ball
     private SpriteRenderer sprender;//use this to turn off hedgies not in use
-
+    private TextMesh healthText;
     public Hedgie()
     {
         go = new GameObject();
         sprender = go.AddComponent<SpriteRenderer>();
+        healthText = go.GetComponentInChildren<TextMesh>();
         color = -1;
         type = -1;
         s = new Sprite();
@@ -28,6 +29,13 @@ public class Hedgie
         this.color = color;
         this.type = type;
         this.health = health;
+        healthText = go.GetComponentInChildren<TextMesh>();
+        if (health > 1) {
+            healthText.text = health.ToString();
+        }
+        else {
+            healthText.text = "";
+        }
         sprender = go.GetComponent<SpriteRenderer>();
         sprender.sprite = s;
         if(color == -1){
@@ -43,8 +51,16 @@ public class Hedgie
         s = h.getSprite();
         color = h.getColor();
         type = h.getType();
+        health = h.getHealth();
         sprender = go.GetComponent<SpriteRenderer>();
         sprender.sprite = s;
+        healthText = go.GetComponentInChildren<TextMesh>();
+        if (health > 1) {
+            healthText.text = health.ToString();
+        }
+        else {
+            healthText.text = " ";
+        }
         if(color == -1){
             sprender.enabled = false;
         }else{
@@ -72,12 +88,17 @@ public class Hedgie
         return health;
     }
 
+    public string getText() {
+        return healthText.text;
+    }
+
     public void setObject(GameObject go){
         this.go = go;
     }
 
     public void setSprite(Sprite s){
         this.s = s;
+        sprender.sprite = s;
     }
 
     public void setColor(int color){
@@ -90,20 +111,16 @@ public class Hedgie
 
     public void setHealth(int health){
         this.health = health;
+        if (health > 1) {
+            healthText.text = health.ToString();
+        }
+        else if (health <= 0) {
+            healthText.text = "";
+        }
     }
 
-    public void setHedgie(Hedgie h){
-        go = h.getObject();
-        s = h.getSprite();
-        color = h.getColor();
-        type = h.getType();
-        sprender = go.GetComponent<SpriteRenderer>();
-        sprender.sprite = s;
-        if(color == -1){
-            sprender.enabled = false;
-        }else{
-            sprender.enabled = true;
-        }
+    public void setText(string text) {
+        healthText.text = text;
     }
 
     public void transmogrify(Hedgie h){
@@ -111,6 +128,8 @@ public class Hedgie
         color = h.getColor();
         type = h.getType();
         sprender.sprite = s;
+        health = h.getHealth();
+        healthText.text = h.getText();
         if(color == -1){
             sprender.enabled = false;
         }else{
@@ -118,27 +137,42 @@ public class Hedgie
         }
     }
 
-    public void transmogrify(Sprite s, int color, int type){
+    public void transmogrify(Sprite s, int color, int type, int health){
         this.s = s;
         this.color = color;
         this.type = type;
+        this.health = health;
         sprender.sprite = s;
+        healthText.text = health.ToString();
         if(color == -1){
             sprender.enabled = false;
         }else{
             sprender.enabled = true;
+        }
+    }
+
+    public int loseHealh(int damage) {
+        health += damage;
+        if (health > 1) {
+            healthText.text = health.ToString();
+            return 0;
+        }
+        else if (health == 1) {
+            healthText.text = "";
+            return 0;
+        }
+        else {
+            healthText.text = "";
+            pop();
+            return -1;
         }
     }
 
     public int pop(){
-        health--;
-        if(health <= 0){
             type = -1;
             color = -1;
             sprender.enabled = false;
             return -1;
-        }
-        return 0;
     }
 }
 

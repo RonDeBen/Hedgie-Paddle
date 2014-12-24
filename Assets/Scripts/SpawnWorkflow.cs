@@ -30,14 +30,14 @@ public class SpawnWorkflow : MonoBehaviour {
 			return k;
 		while(rand >= max){
 			k++;
-			max += tendencies[0];
+			max += tendencies[k];
 		}
 		return k;
 	}
 
 	public int pickHedgieHealth(int type){
 		if(type == ARMOR || type == SPLITTER){
-			return Random.Range(2,3);
+			return Random.Range(3,4);
 		}else{
 			return 1;
 		}

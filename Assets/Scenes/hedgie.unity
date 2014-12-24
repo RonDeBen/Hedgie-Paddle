@@ -154,6 +154,22 @@ MonoBehaviour:
     - {fileID: 21300006, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
     - {fileID: 21300008, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
     - {fileID: 21300010, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
+  - sheetName: Armor
+    sheet:
+    - {fileID: 21300000, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+    - {fileID: 21300002, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+    - {fileID: 21300004, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+    - {fileID: 21300006, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+    - {fileID: 21300008, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+    - {fileID: 21300010, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
+  - sheetName: Splitter
+    sheet:
+    - {fileID: 21300000, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
+    - {fileID: 21300002, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
+    - {fileID: 21300004, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
+    - {fileID: 21300006, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
+    - {fileID: 21300008, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
+    - {fileID: 21300010, guid: 9386e631e5fdd4245bcb6febcf208b34, type: 3}
 --- !u!114 &803942969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,7 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da5c928296c6146a4abcd83223066ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tendencies: 64000000
+  tendencies: 46000000140000000a000000
 --- !u!1 &896286885
 GameObject:
   m_ObjectHideFlags: 0

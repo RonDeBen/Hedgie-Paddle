@@ -7,8 +7,10 @@ public class HedgieGrid {
 	private Vector2 tile;//width and height of each rectangle in the grid
 	private Vector2[,] grid;//the centers of each tile of the grid
 	private Hedgie[,] h;//the hedgie in each tile of the grid
+    private HedgieSprites hsprites;
 
-	public HedgieGrid (int dimensions, int innerBalls, Camera cam){
+	public HedgieGrid (int dimensions, int innerBalls, Camera cam, HedgieSprites hsprites){
+        this.hsprites = hsprites;
 		ballCount = 0;
 		this.dimensions = dimensions;
 		grid = new Vector2[dimensions, dimensions];
@@ -50,7 +52,6 @@ public class HedgieGrid {
 
 	public void pop(int x, int y){
 		ballCount += h[x,y].pop();
-		Debug.Log(ballCount);
 	}
 
 	public int getDimensions(){
@@ -101,9 +102,9 @@ public class HedgieGrid {
 		return h[x,y].getType();
 	}
 
-	public int getLength(){
-		return dimensions;
-	}
+    public int getHealth(int x, int y) {
+        return h[x, y].getHealth();
+    }
 
 	public void setDimensions(int value){
 		dimensions = value;
@@ -125,18 +126,38 @@ public class HedgieGrid {
 	}
 
 	public void setHedgie(int x, int y, Hedgie value){
-		h[x,y].setHedgie(value);
+		h[x,y] = new Hedgie(value);
 	}
 
 	public void setHedgie(Hedgie[,] values){
 		h = values;
 	}
 
+    public void setHealth(int x, int y, int newHealth) {
+        h[x, y].setHealth(newHealth);
+    }
+
+    public void setText(int x, int y, string text) {
+        h[x, y].setText(text);
+    }
+
+    public void setType(int x, int y, int type) {
+        h[x, y].setType(type);
+        h[x, y].setSprite(hsprites.getSprite(type, h[x, y].getColor()));
+    }
+
+    public void loseHealth(int x, int y, int damage) {
+        ballCount += h[x, y].loseHealh(damage);
+        if (h[x, y].getHealth() == 1 && h[x, y].getType() != 2) {
+            h[x, y].setSprite(hsprites.getSprite(0, h[x, y].getColor()));
+        }
+    }
+
 	public void transmogrify (int x, int y, Hedgie hedge){
 		h[x,y].transmogrify(hedge);
 	}
 
-	public void transmogrify(int x, int y, Sprite s, int color, int type){
-		h[x,y].transmogrify(s, color, type);
+	public void transmogrify(int x, int y, Sprite s, int color, int type, int health){
+		h[x,y].transmogrify(s, color, type, health);
 	}
 }
