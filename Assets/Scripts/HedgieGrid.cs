@@ -134,7 +134,7 @@ public class HedgieGrid {
 	}
 
     public void setHealth(int x, int y, int newHealth) {
-        h[x, y].setHealth(newHealth);
+        ballCount += h[x, y].setHealth(newHealth);
     }
 
     public void setText(int x, int y, string text) {

@@ -233,6 +233,7 @@ public class GridControls : MonoBehaviour {
     }
 
     public void checkTouch(Vector3 pos){
+        Debug.Log("Before Click: " + hg.getBallCount());
         Vector3 wp = Camera.main.ScreenToWorldPoint(pos);
         Coords click = new Coords((int)(wp.x / hg.getTile().x), (int)(wp.y / hg.getTile().y));
         Vector2 end = taps.Here(click.x, click.y);

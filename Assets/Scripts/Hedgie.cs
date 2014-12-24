@@ -109,14 +109,22 @@ public class Hedgie
         this.type = type;
     }
 
-    public void setHealth(int health){
+    public int setHealth(int health){
         this.health = health;
         if (health > 1) {
             healthText.text = health.ToString();
+            return 0;
+        }
+        else if (health == 1 && type == 2) {
+            healthText.text = "";
+            return 0;
         }
         else if (health <= 0) {
             healthText.text = "";
+            pop();
+            return -1;
         }
+        return -1;
     }
 
     public void setText(string text) {

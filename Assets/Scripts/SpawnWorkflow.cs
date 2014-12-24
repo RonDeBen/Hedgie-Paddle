@@ -37,7 +37,7 @@ public class SpawnWorkflow : MonoBehaviour {
 
 	public int pickHedgieHealth(int type){
 		if(type == ARMOR || type == SPLITTER){
-			return Random.Range(3,4);
+			return Random.Range(2,4);
 		}else{
 			return 1;
 		}

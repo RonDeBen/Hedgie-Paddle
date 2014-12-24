@@ -80,7 +80,7 @@ public class Pops{
                         }
                         else if (hg.getType(hit.x, hit.y) == SPLITTER) {//If a normal/ace hits a splitter
                             splittify(x, y, hg.getHealth(hit.x, hit.y));
-                            split(hit.x, hit.y, hg.getHealth(hit.x, hit.y) - (hits.Count));
+                            split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) - 1);
                         }
                         else if (hg.getType(hit.x, hit.y) == FIREBALL) {//If a normal/ace hits a fireball
                             fireVector(hit.x, hit.y);
@@ -107,7 +107,7 @@ public class Pops{
                         }
                         else if (hg.getType(hit.x, hit.y) == SPLITTER) {//If an armor hits a splitter
                             splittify(x, y, hg.getHealth(hit.x, hit.y));
-                            split(hit.x, hit.y, hg.getHealth(hit.x, hit.y) - (hits.Count));
+                            split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) - 1);
                         }
                         else if (hg.getType(hit.x, hit.y) == FIREBALL) {//If an armor hits a fireball
 
@@ -123,14 +123,14 @@ public class Pops{
                     foreach (Coords hit in hits) {
                         if (hg.getType(hit.x, hit.y) == NORMAL) {//If a splitter hits a normal
                             splittify(hit.x, hit.y, hg.getHealth(x, y));
-                            split(hit.x, hit.y, hg.getHealth(hit.x, hit.y) - (hits.Count));
+                            split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) - 1);
                         }
                         else if (hg.getType(hit.x, hit.y) == ARMOR) {//If a splitter hits an armor
                             splittify(hit.x, hit.y, hg.getHealth(x, y));
-                            split(hit.x, hit.y, hg.getHealth(hit.x, hit.y) - (hits.Count));
+                            split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) - 1);
                         }
                         else if (hg.getType(hit.x, hit.y) == SPLITTER) {//If a splitter hits a splitter
-                            split(x, y, hg.getHealth(hit.x, hit.y) + (hg.getHealth(x, y) - 1));
+                            split(x, y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) + (hg.getHealth(x, y) - 1));
                         }
                         else if (hg.getType(hit.x, hit.y) == FIREBALL) {//If a splitter hits a fireball
 
@@ -183,7 +183,7 @@ public class Pops{
 
                     }
                 }
-        	
+                Debug.Log("After Click: " + hg.getBallCount());
         }
 
 
@@ -193,14 +193,14 @@ public class Pops{
         hg.loseHealth(x, y, damage);
     }
 
-    private void split(int x, int y, int newHealth) {
-        //Debug.Log("Start Health: " + startHealth + "\nNew Health: " + (startHealth + damage));
+    private void split(int x, int y, int color, int newHealth) {
         for (int r = -1; r <= 1; r++) {
             for (int c = -1; c <= 1; c++) {
                 if (x + r >= 1 && x + r <= dimensions - 1 && y + c >= 1 && y + c <= dimensions - 1) {
-                    if (hg.getColor(x + r, y + c) == hg.getColor(x, y) && hg.getHealth(x + r, y + c) != newHealth) {
+                    if (hg.getType(x + r, y + c) == SPLITTER && hg.getColor(x + r, y + c) == color && hg.getHealth(x + r, y + c) != newHealth) {
                         hg.setHealth(x + r, y + c, newHealth);
-                        split(x + r, y + c, newHealth);
+                        //Debug.Log("x: " + (x + r) + "\ty: " + (y + c) + "\tHealth: " + hg.getHealth(x+r, y+c));
+                        split(x + r, y + c, color, newHealth);
                     }
                 }
             }
