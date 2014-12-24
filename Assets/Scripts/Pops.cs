@@ -90,7 +90,7 @@ public class Pops{
                         }
 
                     }
-                    if (hg.getType(x, y) != SPLITTER) {
+                    if (hg.getType(x, y) != SPLITTER && hg.getType(x, y) != -1) {
                         loseHealth(x, y, -(hits.Count));
                     }
                 }
@@ -183,7 +183,6 @@ public class Pops{
 
                     }
                 }
-                Debug.Log("After Click: " + hg.getBallCount());
         }
 
 
@@ -199,7 +198,6 @@ public class Pops{
                 if (x + r >= 1 && x + r <= dimensions - 1 && y + c >= 1 && y + c <= dimensions - 1) {
                     if (hg.getType(x + r, y + c) == SPLITTER && hg.getColor(x + r, y + c) == color && hg.getHealth(x + r, y + c) != newHealth) {
                         hg.setHealth(x + r, y + c, newHealth);
-                        //Debug.Log("x: " + (x + r) + "\ty: " + (y + c) + "\tHealth: " + hg.getHealth(x+r, y+c));
                         split(x + r, y + c, color, newHealth);
                     }
                 }
