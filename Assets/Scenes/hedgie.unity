@@ -286,6 +286,7 @@ GameObject:
   serializedVersion: 4
   m_Component:
   - 4: {fileID: 1887064802}
+  - 114: {fileID: 1887064803}
   m_Layer: 0
   m_Name: Music Manager
   m_TagString: Untagged
@@ -305,3 +306,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
+--- !u!114 &1887064803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1887064801}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a1de3c645601c442a67a5401e54ba77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - sound: {fileID: 8300000, guid: 4399e81f7adeb4e77ab6abfd0b79f6df, type: 3}
+    source: {fileID: 0}
+    looping: 1
+    loopStartTime: 9.41899967
+    loopEndTime: 88.8000031
