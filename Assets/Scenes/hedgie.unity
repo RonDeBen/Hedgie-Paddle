@@ -131,7 +131,7 @@ MonoBehaviour:
   cam: {fileID: 896286889}
   HedgieObject: {fileID: 100000, guid: 52b2d35e4cf32404687e7d52cf833b9a, type: 2}
   dimensions: 11
-  innerBalls: 17
+  innerBalls: 15
   rotationTime: .5
   movSpeed: 10
 --- !u!114 &803942968
@@ -181,7 +181,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da5c928296c6146a4abcd83223066ecd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tendencies: 46000000000000001e000000
+  tendencies: 46000000140000000a000000
 --- !u!1 &896286885
 GameObject:
   m_ObjectHideFlags: 0
