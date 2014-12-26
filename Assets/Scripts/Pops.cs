@@ -78,15 +78,15 @@ public class Pops{
                 int max = 0;
                 bool gotone = false;
                 foreach (Coords hit in hits) {
-                    if (hg.getType(hit.x, hit.y) == SPLITTER) {
+                    if (hg.getType(hit.x, hit.y) == SPLITTER && hg.getColor(hit.x, hit.y) == hg.getColor(x, y)) {
+                        gotone = true;
                         if(max < hg.getHealth(hit.x, hit.y)){
                             max = hg.getHealth(hit.x, hit.y);
-                            gotone = true;
                         }
                     }
                 }
                 if(gotone){
-                    splittify(x, y, max - 1);
+                    splittify(x, y, max);
                     derp = -1;
                 }
             }
