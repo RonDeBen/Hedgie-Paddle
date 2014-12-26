@@ -10,7 +10,7 @@ PlayerSettings:
   targetGlesGraphics: 1
   targetResolution: 0
   accelerometerFrequency: 60
-  companyName: com.PYYIP.HedgiePaddle
+  companyName: com.JUice.HedgiePaddle
   productName: HedgiePaddle
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
@@ -67,12 +67,12 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  iPhoneBundleIdentifier: com.PYYIP.HedgiePaddle
+  iPhoneBundleIdentifier: com.JUice.HedgiePaddle
   metroEnableIndependentInputSource: 0
   metroEnableLowLatencyPresentationAPI: 0
   productGUID: 3a8984573b6d44decadf1ac29eacc6ec
   iPhoneBundleVersion: 1.0
-  AndroidBundleVersionCode: 3
+  AndroidBundleVersionCode: 5
   AndroidMinSdkVersion: 9
   AndroidPreferredInstallLocation: 1
   aotOptions: 

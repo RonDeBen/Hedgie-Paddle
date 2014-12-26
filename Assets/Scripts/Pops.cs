@@ -75,11 +75,19 @@ public class Pops{
             }
 
             if (hg.getType(x, y) == NORMAL || hg.getType(x, y) == ACE || hg.getType(x, y) == ARMOR) {
+                int max = 0;
+                bool gotone = false;
                 foreach (Coords hit in hits) {
                     if (hg.getType(hit.x, hit.y) == SPLITTER) {
-                        splittify(x, y, hg.getHealth(hit.x, hit.y));
-                        derp = -1;
+                        if(max < hg.getHealth(hit.x, hit.y)){
+                            max = hg.getHealth(hit.x, hit.y);
+                            gotone = true;
+                        }
                     }
+                }
+                if(gotone){
+                    splittify(x, y, max - 1);
+                    derp = -1;
                 }
             }
 
@@ -133,8 +141,8 @@ public class Pops{
             }
 
             else if (hg.getType(x, y) == SPLITTER) {
+                bool doubledip = false;
                 foreach (Coords hit in hits) {
-                    bool doubledip = false;
                     if (hg.getType(hit.x, hit.y) == NORMAL) {//If a splitter hits a normal
                         splittify(hit.x, hit.y, hg.getHealth(x, y));
                         split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) - 1);
