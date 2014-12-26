@@ -72,9 +72,7 @@ public class Pops{
 
             if (hg.getType(x, y) == SPLITTER) {
                 derp = hg.getHealth(x, y) - 1;
-            }
-
-            if (hg.getType(x, y) == NORMAL || hg.getType(x, y) == ACE || hg.getType(x, y) == ARMOR) {
+            }else if (hg.getType(x, y) == NORMAL || hg.getType(x, y) == ACE || hg.getType(x, y) == ARMOR) {
                 int max = 0;
                 bool gotone = false;
                 foreach (Coords hit in hits) {

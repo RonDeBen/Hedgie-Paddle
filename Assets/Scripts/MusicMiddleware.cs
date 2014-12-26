@@ -22,6 +22,7 @@ public class MusicMiddleware : MonoBehaviour {
         if(!startAtBeginning)
             playEntry.source.time = playEntry.loopStartTime;
         playEntry.source.Play();
+        playEntry.looping = true;
     }
 
     public void loopFromTime(string name, float startTime, bool startAtBeginning){
@@ -47,11 +48,12 @@ public class MusicMiddleware : MonoBehaviour {
         foreach(SoundEntry sound in sounds){
             sound.source = gameObject.AddComponent<AudioSource>() as AudioSource;
             sound.source.clip = sound.sound;
-            //sound.loopEndTime = sound.source.clip.length;
+            if(sound.loopEndTime <= 0.0f)
+                sound.loopEndTime = sound.source.clip.length;
             sound.looping = false;
         }
-        //loopSound("Very_Hedgie", true);
-        //loopFromTime("Very_Hedgie", 9.419f, true);
+
+        loopSound("Very_Hedgie", false);
     }
 
     void FixedUpdate(){
