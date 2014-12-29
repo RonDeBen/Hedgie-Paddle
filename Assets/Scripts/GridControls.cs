@@ -28,48 +28,72 @@ public class GridControls : MonoBehaviour {
     private Pops pops;
     private HedgieSprites hsprites;
     private SpawnWorkflow sw;
-
-    void Start(){
-        hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
-        hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
-        taps = new Taps(hg);
-        pops = new Pops(hg);
+    private bool hasStarted = false;
+    void Start() {
         sw = GetComponent<SpawnWorkflow>() as SpawnWorkflow;
-        sw.sumTotal();
-        InstantiateHedgies();
-        SpawnOuterBalls();
-        SpawnInnerBalls(innerBalls);
+        hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
     }
+
+    public void MakeGrid(){
+        if(!hasStarted)
+            hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
+        else {
+            for (int x = 0; x < dimensions; x++) {
+                for (int y = 0; y < dimensions; y++) {
+                    Destroy(hg.getGameObject(x, y));
+                }
+            }
+            hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
+        }
+        print("dick1");
+        taps = new Taps(hg);
+        print("dick2");
+        pops = new Pops(hg);
+        print("dick3");
+        InstantiateHedgies();
+        print("what's a dick4?");
+        SpawnOuterBalls();
+        print("ayy");
+        SpawnInnerBalls(innerBalls);
+        print("lmao");
+        hasStarted = true;
+    }
+
+    public void setParams(int dimensions, int innerHedgies, int normalTend, int armorTend, int splitterTend, int armorMin, int splitterMin, int armorMax, int splitterMax) {
+        this.dimensions = dimensions;
+        this.innerBalls = innerHedgies;
+        sw.setTendencies(normalTend, armorTend, splitterTend);
+        sw.setRange(armorMin, armorMax, splitterMin, splitterMax);
+    }
+
 
     private void InstantiateHedgies(){
         //change this shit
         Vector2 g;
-        for(int x = 0; x < dimensions; x++){
-            for(int y = 0; y < dimensions; y++){
-                g = hg.getGrid(x, y);
-                GameObject go = (GameObject)Instantiate(HedgieObject, new Vector3(g.x, g.y, 0), Quaternion.identity);
-                Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0,0), -1, -1, 1);
-                hg.setHedgie(x, y, defaultHedgie);
+            for (int x = 0; x < dimensions; x++) {
+                for (int y = 0; y < dimensions; y++) {
+                    g = hg.getGrid(x, y);
+                    GameObject go = (GameObject)Instantiate(HedgieObject, new Vector3(g.x, g.y, 0), Quaternion.identity);
+                    Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0, 0), -1, -1, 1);
+                    hg.setHedgie(x, y, defaultHedgie);
+                }
             }
-        }
     }
 
     //change this if you want to lean towards certain hedgies
     private void SpawnBall(int x, int y)
     {
         int type = sw.pickHedgieType();
-        //int type = 2;
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
+        Hedgie spawnHedgie = new Hedgie(hg.getGameObject(x,y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
         hg.ballIncrement();
     }
 
     private void SpawnOuterBall(int x, int y){
         int type = sw.pickHedgieType();
-        //int type = 2;
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Hedgie spawnHedgie = new Hedgie(hg.getHedgie(x,y).getObject(), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
+        Hedgie spawnHedgie = new Hedgie(hg.getGameObject(x,y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
     }
 
@@ -81,7 +105,6 @@ public class GridControls : MonoBehaviour {
             SpawnOuterBall(0,d);
             //right side
             SpawnOuterBall(dimensions-1, d);
-
             //bottom side
             SpawnOuterBall(d, 0);
             //top side
@@ -106,7 +129,7 @@ public class GridControls : MonoBehaviour {
 
 
     public bool InMotion(){
-        return (moving || counterclockwise || clockwise);
+        return (moving || counterclockwise || clockwise || !hasStarted);
     }
     void FixedUpdate(){
         if(counterclockwise){
@@ -236,7 +259,7 @@ public class GridControls : MonoBehaviour {
         Vector3 wp = Camera.main.ScreenToWorldPoint(pos);
         Coords click = new Coords((int)(wp.x / hg.getTile().x), (int)(wp.y / hg.getTile().y));
         Vector2 end = taps.Here(click.x, click.y);
-        if(end != new Vector2(-1,-1)){
+        if(end != Vector2.zero){
             move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
         }
     }

@@ -8,14 +8,22 @@ public class PlayerController : MonoBehaviour {
 	private RuntimePlatform platform = Application.platform;
 	private GridControls gc;
 	private Vector2 touchStart, touchEnd;
+    public GameObject canv;
+    private MenuTexts mt;
     //private ScreenOrientation orient;
 	void Start () {
 		gc = GetComponent<GridControls>() as GridControls;
+        mt = canv.GetComponent<MenuTexts>() as MenuTexts;
         //orient = Screen.orientation;
 	}
 	
 	void Update()
     {
+
+        if (Input.GetKeyDown(KeyCode.Menu) || Input.GetKeyDown(KeyCode.Escape)) {
+            mt.remenu();
+        }
+
         if(!gc.InMotion()){
             if (platform == RuntimePlatform.Android || platform == RuntimePlatform.IPhonePlayer)
             {

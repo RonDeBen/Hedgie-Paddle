@@ -15,8 +15,9 @@ public class SpawnWorkflow : MonoBehaviour {
 	public List<int> tendencies;
 
 	private int total, level;
-
+    private int armorMin, armorMax, splitterMin, splitterMax;
 	public void sumTotal(){
+        total = 0;
 		for(int k = 0; k < tendencies.Count; k++){
 			total += tendencies[k];
 		}
@@ -36,11 +37,29 @@ public class SpawnWorkflow : MonoBehaviour {
 	}
 
 	public int pickHedgieHealth(int type){
-		if(type == ARMOR || type == SPLITTER){
-			return Random.Range(2,4);
-		}else{
+		if(type == ARMOR){
+			return Random.Range(armorMin, armorMax + 1);
+        }
+        else if (type == SPLITTER) {
+            return Random.Range(splitterMin, splitterMax + 1);
+        }
+        else{
 			return 1;
 		}
 	}
+
+    public void setRange(int armorMin, int armorMax, int splitterMin, int splitterMax) {
+        this.armorMin = armorMin;
+        this.armorMax = armorMax;
+        this.splitterMin = splitterMin;
+        this.splitterMax = splitterMax;
+    }
+
+    public void setTendencies(int normalTend, int armorTend, int splitterTend) {
+        tendencies[0] = normalTend;
+        tendencies[1] = armorTend;
+        tendencies[2] = splitterTend;
+        sumTotal();
+    }
 
 }

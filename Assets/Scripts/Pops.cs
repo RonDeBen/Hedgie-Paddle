@@ -151,7 +151,7 @@ public class Pops{
                     }
                     else if (hg.getType(hit.x, hit.y) == SPLITTER) {//If a splitter hits a splitter
                         if (!doubledip) {
-                            split(x, y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) + derp);
+                            split(hit.x, hit.y, hg.getColor(hit.x, hit.y), hg.getHealth(hit.x, hit.y) + derp);
                             doubledip = true;
                         }
                         

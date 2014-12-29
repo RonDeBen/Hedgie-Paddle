@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 public class MusicMiddleware : MonoBehaviour {
 
+
     [System.Serializable]
     public class SoundEntry {
         public AudioClip sound;
@@ -53,7 +54,7 @@ public class MusicMiddleware : MonoBehaviour {
             sound.looping = false;
         }
 
-        loopSound("Very_Hedgie", false);
+        //loopSound("Very_Hedgie", false);
     }
 
     void FixedUpdate(){

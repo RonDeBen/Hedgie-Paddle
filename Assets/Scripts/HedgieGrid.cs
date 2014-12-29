@@ -17,14 +17,6 @@ public class HedgieGrid {
 		h = new Hedgie[dimensions, dimensions];
 		h.Initialize();
 
-		for (int k = 0; k < dimensions; k++)
-        {
-            for (int j = 0; j < dimensions; j++)
-            {
-                h[k, j] = new Hedgie();
-            }
-        }
-
         float height = 2f * cam.orthographicSize;
         float width = height * cam.aspect;
 
@@ -74,6 +66,9 @@ public class HedgieGrid {
 		ballCount--;
 	}
 
+    public GameObject getGameObject(int x, int y) {
+        return h[x, y].getObject();
+    }
 	public Vector2 getTile(){
 		return tile;
 	} 
@@ -114,6 +109,9 @@ public class HedgieGrid {
 		ballCount = value;
 	}
 
+    public void setSprite(int x, int y, Sprite s) {
+        h[x, y].setSprite(s);
+    }
 	public void setTile(Vector2 value){
 		value = tile;
 	} 

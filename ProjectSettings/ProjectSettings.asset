@@ -103,13 +103,13 @@ PlayerSettings:
   iPadHighResLandscapeSplashScreen: {fileID: 0}
   AndroidTargetDevice: 0
   AndroidSplashScreenScale: 0
-  AndroidKeystoreName: /Users/rondebenedetti/Documents/RonDeBen.keystore
-  AndroidKeyaliasName: rondeben
+  AndroidKeystoreName: C:/Users/Kelly/Documents/Unity/Hedgie_Paddle/user.keystore
+  AndroidKeyaliasName: rontry
   resolutionDialogBanner: {fileID: 0}
   m_BuildTargetIcons:
   - m_BuildTarget: 
     m_Icons:
-    - m_Icon: {fileID: 2800000, guid: 914b71f1e36e3114fb492765dc0828a0, type: 3}
+    - m_Icon: {fileID: 2800000, guid: fe9ba1f5947b7468fb4b8719599b446b, type: 3}
       m_Size: 128
   m_BuildTargetBatching:
   - m_BuildTarget: Android

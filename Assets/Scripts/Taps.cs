@@ -59,7 +59,7 @@ public class Taps{
 		 	//DO SOME PROTOCOL FOR ACE
 		 }
 
-		 return new Vector2(-1,-1);
+		 return Vector2.zero;
 	}
 
 	private int checkRight(int y)

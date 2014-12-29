@@ -21,9 +21,6 @@ public class Hedgie
 
     public Hedgie(GameObject go, Sprite s, int color, int type, int health)
     {
-        if(go == null){
-            go = new GameObject();
-        }
         this.go = go;
         this.s = s;
         this.color = color;
