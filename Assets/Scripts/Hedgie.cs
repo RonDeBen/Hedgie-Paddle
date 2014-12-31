@@ -65,6 +65,10 @@ public class Hedgie
         }
     }
 
+    private void changeLocalScale(Vector3 newScale){    
+        go.transform.localScale = newScale;
+    }
+
     public GameObject getObject(){
         return go;
     }
@@ -170,10 +174,10 @@ public class Hedgie
     }
 
     public int pop(){
-            type = -1;
-            color = -1;
-            sprender.enabled = false;
-            return -1;
+        type = -1;
+        color = -1;
+        sprender.enabled = false;
+        return -1;
     }
 }
 

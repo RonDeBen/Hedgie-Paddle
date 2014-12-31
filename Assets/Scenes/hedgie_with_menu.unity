@@ -2869,6 +2869,7 @@ GameObject:
   - 114: {fileID: 1555816295}
   - 114: {fileID: 1555816294}
   - 114: {fileID: 1555816293}
+  - 114: {fileID: 1555816298}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -2904,12 +2905,12 @@ MonoBehaviour:
   ss:
   - sheetName: Normal
     sheet:
-    - {fileID: 21300000, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
-    - {fileID: 21300002, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
-    - {fileID: 21300004, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
-    - {fileID: 21300006, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
-    - {fileID: 21300008, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
-    - {fileID: 21300010, guid: 9e4ef212a17e2456b934fec500cc1013, type: 3}
+    - {fileID: 21300000, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
+    - {fileID: 21300002, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
+    - {fileID: 21300004, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
+    - {fileID: 21300006, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
+    - {fileID: 21300008, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
+    - {fileID: 21300010, guid: 01e682dfb46d745f6a02c5e5008ac7a5, type: 3}
   - sheetName: Armor
     sheet:
     - {fileID: 21300000, guid: 7f7eb434b518d32449081d0be052f54b, type: 3}
@@ -2970,6 +2971,23 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
+--- !u!114 &1555816298
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1555816292}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a1de3c645601c442a67a5401e54ba77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sounds:
+  - sound: {fileID: 8300000, guid: 4399e81f7adeb4e77ab6abfd0b79f6df, type: 3}
+    source: {fileID: 0}
+    looping: 0
+    loopStartTime: 9.41899967
+    loopEndTime: 0
 --- !u!1 &1605723700
 GameObject:
   m_ObjectHideFlags: 0
@@ -3640,52 +3658,6 @@ CanvasRenderer:
     type: 2}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2131000549}
---- !u!1 &2136838323
-GameObject:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 175638, guid: 82e88ae1d3395f7459c49d85adcf4956, type: 2}
-  m_PrefabInternal: {fileID: 0}
-  serializedVersion: 4
-  m_Component:
-  - 4: {fileID: 2136838325}
-  - 114: {fileID: 2136838324}
-  m_Layer: 0
-  m_Name: Music Manager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2136838324
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 11475638, guid: 82e88ae1d3395f7459c49d85adcf4956,
-    type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2136838323}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3a1de3c645601c442a67a5401e54ba77, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  sounds:
-  - sound: {fileID: 8300000, guid: 4399e81f7adeb4e77ab6abfd0b79f6df, type: 3}
-    source: {fileID: 0}
-    looping: 1
-    loopStartTime: 9.41899967
-    loopEndTime: 88.8000031
---- !u!4 &2136838325
-Transform:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 475638, guid: 82e88ae1d3395f7459c49d85adcf4956, type: 2}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 2136838323}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
 --- !u!1 &2142659773
 GameObject:
   m_ObjectHideFlags: 0

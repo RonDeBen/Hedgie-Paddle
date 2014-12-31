@@ -45,6 +45,11 @@ public class MusicMiddleware : MonoBehaviour {
         playEntry.looping = true;
     }
 
+    public void pauseSound(string name){
+        SoundEntry pauseEntry = sounds.Find(item => item.sound.name == name);
+        pauseEntry.source.Pause();
+    }
+
     void Start() {
         foreach(SoundEntry sound in sounds){
             sound.source = gameObject.AddComponent<AudioSource>() as AudioSource;
@@ -53,11 +58,9 @@ public class MusicMiddleware : MonoBehaviour {
                 sound.loopEndTime = sound.source.clip.length;
             sound.looping = false;
         }
-
-        //loopSound("Very_Hedgie", false);
     }
 
-    void FixedUpdate(){
+    void Update(){
         foreach(SoundEntry sound in sounds){
             if(sound.looping){
                 if(!sound.source.isPlaying || sound.source.time >= sound.loopEndTime - 0.01){

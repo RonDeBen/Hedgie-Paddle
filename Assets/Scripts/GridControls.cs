@@ -3,6 +3,7 @@ using System.Collections;
 
 [RequireComponent (typeof (HedgieSprites))]
 [RequireComponent (typeof (SpawnWorkflow))]
+[RequireComponent (typeof (MusicMiddleware))]
 public class GridControls : MonoBehaviour {
 
     public struct Coords{//lets me refer to various things as x,y coordinates
@@ -29,34 +30,25 @@ public class GridControls : MonoBehaviour {
     private HedgieSprites hsprites;
     private SpawnWorkflow sw;
     private bool hasStarted = false;
+    private MusicMiddleware mm;
     void Start() {
         sw = GetComponent<SpawnWorkflow>() as SpawnWorkflow;
         hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
+        mm = GetComponent<MusicMiddleware>() as MusicMiddleware;
     }
 
     public void MakeGrid(){
-        if(!hasStarted)
-            hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
-        else {
-            for (int x = 0; x < dimensions; x++) {
-                for (int y = 0; y < dimensions; y++) {
-                    Destroy(hg.getGameObject(x, y));
-                }
-            }
-            hg = new HedgieGrid(dimensions, innerBalls, cam, hsprites);
-        }
-        print("dick1");
+        if(hasStarted)
+            hg.DestroyAll();
+        
+        hg = new HedgieGrid(dimensions, HedgieObject, cam, hsprites);
         taps = new Taps(hg);
-        print("dick2");
         pops = new Pops(hg);
-        print("dick3");
-        InstantiateHedgies();
-        print("what's a dick4?");
+        //InstantiateHedgies();
         SpawnOuterBalls();
-        print("ayy");
         SpawnInnerBalls(innerBalls);
-        print("lmao");
         hasStarted = true;
+        //mm.loopSound("Very_Hedgie", true);
     }
 
     public void setParams(int dimensions, int innerHedgies, int normalTend, int armorTend, int splitterTend, int armorMin, int splitterMin, int armorMax, int splitterMax) {
@@ -66,26 +58,11 @@ public class GridControls : MonoBehaviour {
         sw.setRange(armorMin, armorMax, splitterMin, splitterMax);
     }
 
-
-    private void InstantiateHedgies(){
-        //change this shit
-        Vector2 g;
-            for (int x = 0; x < dimensions; x++) {
-                for (int y = 0; y < dimensions; y++) {
-                    g = hg.getGrid(x, y);
-                    GameObject go = (GameObject)Instantiate(HedgieObject, new Vector3(g.x, g.y, 0), Quaternion.identity);
-                    Hedgie defaultHedgie = new Hedgie(go, hsprites.getSprite(0, 0), -1, -1, 1);
-                    hg.setHedgie(x, y, defaultHedgie);
-                }
-            }
-    }
-
-    //change this if you want to lean towards certain hedgies
     private void SpawnBall(int x, int y)
     {
         int type = sw.pickHedgieType();
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Hedgie spawnHedgie = new Hedgie(hg.getGameObject(x,y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
+        Hedgie spawnHedgie = new Hedgie(hg.getObject(x, y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
         hg.ballIncrement();
     }
@@ -93,7 +70,7 @@ public class GridControls : MonoBehaviour {
     private void SpawnOuterBall(int x, int y){
         int type = sw.pickHedgieType();
         int color = Random.Range(0, hsprites.getSheetLength(type));
-        Hedgie spawnHedgie = new Hedgie(hg.getGameObject(x,y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
+        Hedgie spawnHedgie = new Hedgie(hg.getObject(x, y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
     }
 

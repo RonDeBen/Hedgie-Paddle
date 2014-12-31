@@ -28,3 +28,7 @@ ExportedObj/
 .Trashes
 Icon?
 ehthumbs.db
+# ============= #
+# Ron Generated #
+# ============= #
+*.keystore
