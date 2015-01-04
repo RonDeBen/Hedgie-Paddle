@@ -41,7 +41,7 @@ public class PlayerController : MonoBehaviour {
                         touchEnd = touch.position;
                         if(Vector2.Distance(touchStart,touchEnd) > tapDeviation){
                         //swipes
-                        if(touchStart.y > Screen.height/2){//top half of the screen
+                        if(touchStart.y > Screen.height/2){//the starting touch is in the top half of the screen
                             if(touchEnd.x > touchStart.x){//going right
                                 gc.rotateClockwise();
                             }else{//going left
