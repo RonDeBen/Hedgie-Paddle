@@ -64,14 +64,11 @@ public class EntropyTree : MonoBehaviour {
 		foreach(Move move in FindAllMoves(boardState)){
 			//change this later when you add depth
 			Node newNode = new Node(boardState, move, leftSide, rightSide, topSide, bottomSide);
-			// Debug.Log(newNode.ToString());
 			if(newNode.entropy < bestNode.entropy){
 				bestNode = newNode;
-				// Debug.Log(bestNode.ToString());
 			}
 		}
 		// Debug.Log("Best: " + bestNode.ToString());
-		// Debug.Log(bestNode.ToString());
 		return bestNode.move;
 	}
 
@@ -100,7 +97,7 @@ public class EntropyTree : MonoBehaviour {
 					hasMoveDown = false;
 				}
 			}
-			if(dimensions % 2 == 0){
+			// if(dimensions % 2 == 0){
 				if(hasMoveLeft){
 					allMoves.AddRange(new List<Move>() {new Move(3, 0, checkHog.y),
 														new Move(3, 1, checkHog.y),
@@ -129,7 +126,7 @@ public class EntropyTree : MonoBehaviour {
 														new Move(2, 2, dimensions - checkHog.x - 1)});	
 					// allMoves.Add(new Move(2, 0, dimensions - checkHog.x - 1));
 				}
-			}
+			// }
 		}
 		// foreach(Move move in allMoves){
 		// 	Debug.Log(move.ToString());

@@ -4,7 +4,7 @@ using UnityEngine;
 using System.Linq;
 
 public class Node{
-	public double entropy;
+	public float entropy;
 	public Dictionary<Coords, Hedgehog> boardState;
 	public int[] leftSide, rightSide, topSide, bottomSide;
 	public int depth, moveColor;
@@ -53,7 +53,7 @@ public class Node{
 	} 
 
 	public Node(){
-		entropy = double.MaxValue;
+		entropy = float.MaxValue;
 		// entropy = 0;
 	}
 
@@ -64,18 +64,12 @@ public class Node{
 	private float Entropy(){
 		float sum = 0;
 		foreach(KeyValuePair<Coords, Hedgehog> element in boardState){
-			float p = Prob(element.Value.d);
-			// Debug.Log(element.Value.d);
-			if(p > 0.0001){
-				sum -= p*Mathf.Log(p,2); 
+			if(element.Value.d == 0){
+				sum += 1; 
 			}else{
-				sum += 1f;
+				float p = Prob(element.Value.d);
+				sum -= Mathf.Log(p, 10);
 			}
-			// if(sum == 1){
-			// 	sum = p;
-			// }else{
-			// 	sum *= p;
-			// }
 		}
 		return sum;
 	}
