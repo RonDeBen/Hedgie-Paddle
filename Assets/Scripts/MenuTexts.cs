@@ -4,16 +4,23 @@ using UnityEngine.UI;
 //using UnityEngine.EventSystems;
 public class MenuTexts : MonoBehaviour {
 
+    public static MenuTexts instance;
+
     private int dimensions, innerHedgies, normalTend, armorTend, splitterTend, armorMin, splitterMin, armorMax, splitterMax;
     private GridControls gc;
-    public GameObject go;
+    public bool isActive = true;
 
 
-    void Start() {
-        gc = go.GetComponent<GridControls>() as GridControls;
+    void Awake() {
+        gc = gameObject.GetComponent<GridControls>() as GridControls;
+        if(instance != null){
+            GameObject.Destroy(instance);
+        }
+        instance = this;
     }
 
     public void onClick() {
+        Debug.Log("what");
         InputField[] fields = gameObject.GetComponentsInChildren<InputField>();
         
         int.TryParse(fields[0].text, out dimensions);
@@ -46,10 +53,12 @@ public class MenuTexts : MonoBehaviour {
 
         gc.setParams(dimensions, innerHedgies, normalTend, armorTend, splitterTend, armorMin, splitterMin, armorMax, splitterMax);
         gc.MakeGrid();
+        isActive = false;
         gameObject.SetActive(false);
     }
 
     public void remenu() {
+        isActive = false;
         gameObject.SetActive(true);
     }
 }

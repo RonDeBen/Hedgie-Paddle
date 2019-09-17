@@ -50,7 +50,7 @@ public class MusicMiddleware : MonoBehaviour {
         pauseEntry.source.Pause();
     }
 
-    void Start() {
+    void Awake() {
         foreach(SoundEntry sound in sounds){
             sound.source = gameObject.AddComponent<AudioSource>() as AudioSource;
             sound.source.clip = sound.sound;

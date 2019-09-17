@@ -18,7 +18,23 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void Update()
-    {
+    {   
+        if (Input.GetKeyDown(KeyCode.Space)){
+            // EntropyTree.instance.Debugging();
+            // EntropyTree.instance.FindNextMove();
+            // gc.MakeAIMove(EntropyTree.instance.FindNextMove());
+            gc.TurnOnAIMode();
+        }
+
+        if (Input.GetKeyDown(KeyCode.Z)){
+            EntropyTree.instance.Debugging();
+            // EntropyTree.instance.FindNextMove();
+            // gc.MakeAIMove(EntropyTree.instance.FindNextMove());
+        }
+
+        if (Input.GetKeyDown(KeyCode.X)){
+            EntropyTree.instance.DisplayHedgehogs();
+        }
 
         if (Input.GetKeyDown(KeyCode.Menu) || Input.GetKeyDown(KeyCode.Escape)) {
             mt.remenu();
@@ -62,7 +78,8 @@ public class PlayerController : MonoBehaviour {
                     }
                 }
             }
-    		else if (platform == RuntimePlatform.WindowsEditor || platform == RuntimePlatform.WindowsPlayer || platform == RuntimePlatform.OSXEditor || platform == RuntimePlatform.OSXPlayer)
+            else
+    		// else if (platform == RuntimePlatform.WindowsEditor || platform == RuntimePlatform.WindowsPlayer || platform == RuntimePlatform.OSXEditor || platform == RuntimePlatform.OSXPlayer )
     		{
     			if (Input.GetMouseButtonDown(0))
     			{

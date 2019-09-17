@@ -3,15 +3,6 @@ using System.Collections;
 
 public class Taps{
 
-	public struct Coords{
-        public int x, y;
-
-        public Coords(int x, int y){
-            this.x = x;
-            this.y = y;
-        }
-    }
-
 	private const int NORMAL = 0;
 	private const int ARMOR = 1;
 	private const int SPLITTER = 2;
@@ -29,7 +20,7 @@ public class Taps{
 	}
 
 
-	public Vector2 Here(int x, int y){
+	public Vector2 FindResultingVector(int x, int y){
 		if(hg.getType(x, y) != ACE){
 			if (x == 0 && y != 0 && y != dimensions - 1){//if the left corner is clicked
 	        	int check = checkRight(y);

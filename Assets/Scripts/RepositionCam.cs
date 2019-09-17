@@ -6,8 +6,8 @@ public class RepositionCam : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 
-        float height = 2f * camera.orthographicSize;
-        float width = height * camera.aspect;
+        float height = 2f * GetComponent<Camera>().orthographicSize;
+        float width = height * GetComponent<Camera>().aspect;
 
         Vector3 newPosition = new Vector3(transform.position.x - width / 2, transform.position.y - height / 2, 0);
         

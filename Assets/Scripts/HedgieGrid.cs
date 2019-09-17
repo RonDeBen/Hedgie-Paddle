@@ -2,7 +2,8 @@
 using System.Collections;
 
 public class HedgieGrid : MonoBehaviour {
-	private int dimensions;//grid size ex. 10 makes a 10x10 grid
+
+	public int dimensions;//grid size ex. 10 makes a 10x10 grid
 	private int ballCount;//number of balls in the center
 	private Vector2 tile;//width and height of each rectangle in the grid
 	private Vector2[,] grid;//the centers of each tile of the grid
@@ -44,6 +45,7 @@ public class HedgieGrid : MonoBehaviour {
 			correctedScales[k] = new Vector3(newWidth, newHeight, 1f);
         }
 
+        EntropyTree.SetDimensions(dimensions);
 	}
 
 	private Vector2[,] findGridCenters(){

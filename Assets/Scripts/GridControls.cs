@@ -6,20 +6,11 @@ using System.Collections;
 [RequireComponent (typeof (MusicMiddleware))]
 public class GridControls : MonoBehaviour {
 
-    public struct Coords{//lets me refer to various things as x,y coordinates
-        public int x, y;
-
-        public Coords(int x, int y){
-            this.x = x;
-            this.y = y;
-        }
-    }
-
     public Camera cam;//the main camera
     public GameObject HedgieObject;
     public int dimensions, innerBalls;
     public float rotationTime, movSpeed;//time for rotation and speed of hedgie travel
-    private bool clockwise, counterclockwise, moving, spinning;//are true when an action is occuring
+    private bool clockwise, counterclockwise, moving, spinning, doubleClockwise, onceAround;//are true when an action is occuring
     private float clockStart, spinClockStart;//holds when the timer starts
     private Coords movStart, movEnd;//coordinates within the grid dimensions where you start and end
     private Vector2 movStartPos, movEndPos;//position within the gamespace where you start and end
@@ -31,10 +22,18 @@ public class GridControls : MonoBehaviour {
     private SpawnWorkflow sw;
     private bool hasStarted = false;
     private MusicMiddleware mm;
+
+    public int numberOfMoves = 0;
+
+    public bool isAIOn = false;
+    public bool canMakeAIMove = false;
+
     void Start() {
         sw = GetComponent<SpawnWorkflow>() as SpawnWorkflow;
         hsprites = GetComponent<HedgieSprites>() as HedgieSprites;
         mm = GetComponent<MusicMiddleware>() as MusicMiddleware;
+
+        MakeGrid();
     }
 
     public void MakeGrid(){
@@ -48,7 +47,7 @@ public class GridControls : MonoBehaviour {
         SpawnOuterBalls();
         SpawnInnerBalls(innerBalls);
         hasStarted = true;
-        //mm.loopSound("Very_Hedgie", true);
+        mm.loopSound("Very_Hedgie", true);
     }
 
     public void setParams(int dimensions, int innerHedgies, int normalTend, int armorTend, int splitterTend, int armorMin, int splitterMin, int armorMax, int splitterMax) {
@@ -65,6 +64,8 @@ public class GridControls : MonoBehaviour {
         Hedgie spawnHedgie = new Hedgie(hg.getObject(x, y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
         hg.ballIncrement();
+
+        EntropyTree.instance.AddHedgehog(x, y, color);
     }
 
     private void SpawnOuterBall(int x, int y){
@@ -72,6 +73,7 @@ public class GridControls : MonoBehaviour {
         int color = Random.Range(0, hsprites.getSheetLength(type));
         Hedgie spawnHedgie = new Hedgie(hg.getObject(x, y), hsprites.getSprite(type, color), color, type, sw.pickHedgieHealth(type));
         hg.transmogrify(x, y, spawnHedgie);
+        EntropyTree.instance.SetOuterHedgehog(x, y, color);
     }
 
     private void SpawnOuterBalls()
@@ -108,7 +110,16 @@ public class GridControls : MonoBehaviour {
     public bool InMotion(){
         return (moving || counterclockwise || clockwise || !hasStarted);
     }
+
+    void Update(){
+        if(!InMotion() && isAIOn && canMakeAIMove){
+            MakeAIMove();
+            canMakeAIMove = false;
+        }
+    }
+
     void FixedUpdate(){
+
         if(counterclockwise){
 
             float timeSinceStarted = Time.time - clockStart;
@@ -144,12 +155,24 @@ public class GridControls : MonoBehaviour {
                     hg.setHedgie(dimensions - 1, k + 1, bottom);//right is given bottom
                     hg.setHedgie(dimensions - k - 2, dimensions - 1, right);//top is given right
                     hg.setHedgie(0, dimensions - 2 - k, top);//left is given top
+
+                    EntropyTree.instance.SetOuterHedgehog(k + 1, 0, left.getColor());//bottom is given left
+                    EntropyTree.instance.SetOuterHedgehog(dimensions - 1, k + 1, bottom.getColor());//right is given bottom
+                    EntropyTree.instance.SetOuterHedgehog(dimensions - k - 2, dimensions - 1, right.getColor());//top is given right
+                    EntropyTree.instance.SetOuterHedgehog(0, dimensions - 2 - k, top.getColor());//left is given top
                 }
             }
         }
-        if(clockwise){
+        if(clockwise || doubleClockwise){
             float timeSinceStarted = Time.time - clockStart;
-            float complete = timeSinceStarted / rotationTime;
+
+            float complete = 0f;
+
+            if(doubleClockwise || onceAround){
+                complete = 2f*(timeSinceStarted / rotationTime);
+            }else{
+                complete = timeSinceStarted / rotationTime;
+            }
 
             Vector2 leftPos, rightPos, topPos, bottomPos;
 
@@ -170,6 +193,15 @@ public class GridControls : MonoBehaviour {
             }
 
             if(complete >= 1.0f){
+                if(doubleClockwise){
+                    if(onceAround){
+                        doubleClockwise = false;
+                    }else{
+                        onceAround = true;
+                        complete = 0;
+                        clockStart = Time.time;
+                    }
+                }
                 clockwise = false;
                 for (int k = 0; k < dimensions - 2; k++){
                     Hedgie bottom = new Hedgie(hg.getHedgie(k + 1, 0));
@@ -181,6 +213,11 @@ public class GridControls : MonoBehaviour {
                     hg.setHedgie(dimensions - 1, k + 1, top);//right is given top
                     hg.setHedgie(dimensions - k - 2, dimensions - 1, left);//top is given left
                     hg.setHedgie(0, dimensions - 2 - k, bottom);//left is given bottom
+
+                    EntropyTree.instance.SetOuterHedgehog(k + 1, 0, right.getColor());//bottom is given right
+                    EntropyTree.instance.SetOuterHedgehog(dimensions - 1, k + 1, top.getColor());//right is given top
+                    EntropyTree.instance.SetOuterHedgehog(dimensions - k - 2, dimensions - 1, left.getColor());//top is given left
+                    EntropyTree.instance.SetOuterHedgehog(0, dimensions - 2 - k, bottom.getColor());//left is given bottom
                 }
             }
         }
@@ -195,6 +232,8 @@ public class GridControls : MonoBehaviour {
                 hg.transmogrify(movEnd.x, movEnd.y, hg.getHedgie(movStart.x, movStart.y));
                 hg.getHedgie(movStart.x, movStart.y).getObject().transform.position = hg.getGrid(movStart.x, movStart.y);
                 SpawnOuterBall(movStart.x, movStart.y);
+                
+                EntropyTree.instance.AddHedgehog(movEnd.x, movEnd.y, hg.getHedgie(movEnd.x, movEnd.y).getColor());
 
                 pops.Advent(movEnd.x, movEnd.y);
                 checkRestart(innerBalls);
@@ -215,14 +254,20 @@ public class GridControls : MonoBehaviour {
 
     public void rotateCounterclockwise()
     {
-            clockStart = Time.time;
-            counterclockwise = true;
+        clockStart = Time.time;
+        counterclockwise = true;
     }
 
     public void rotateClockwise()
     {
             clockStart = Time.time;
             clockwise = true;
+    }
+
+    public void rotateDoubleClockwise(){
+        clockStart = Time.time;
+        doubleClockwise = true;
+        onceAround = false;
     }
 
     public void spinHedgie(Quaternion qStart, Quaternion qEnd){
@@ -235,13 +280,13 @@ public class GridControls : MonoBehaviour {
     public void checkTouch(Vector3 pos){
         Vector3 wp = Camera.main.ScreenToWorldPoint(pos);
         Coords click = new Coords((int)(wp.x / hg.getTile().x), (int)(wp.y / hg.getTile().y));
-        Vector2 end = taps.Here(click.x, click.y);
+        Vector2 end = taps.FindResultingVector(click.x, click.y);
         if(end != Vector2.zero){
-            move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+            Move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
         }
     }
 
-    private void move(Coords start, Coords end)
+    private void Move(Coords start, Coords end)
     {
         movStart = start;
         movEnd = end;
@@ -258,5 +303,73 @@ public class GridControls : MonoBehaviour {
 
     public HedgieSprites getHedgieSprites(){
         return hsprites;
+    }
+
+    public void MakeAIMove(){
+        // Debug.Log(move.ToString());
+        numberOfMoves++;
+        StartCoroutine(AIMove(EntropyTree.instance.FindNextMove()));
+    }
+
+    public void TurnOnAIMode(){
+        canMakeAIMove = true;
+        isAIOn = true;
+    }
+
+    IEnumerator AIMove(Move move){
+
+        Coords click = new Coords(0,0);
+        Vector2 end = new Vector2();
+
+        switch(move.rotation){
+            case 0:
+                break;
+            case 1:
+                rotateClockwise();
+                break;
+            case -1:
+                rotateCounterclockwise();
+                break;
+            case 2:
+                rotateDoubleClockwise();
+                break;
+            default:
+               Debug.Log("weird");
+                break;
+        }
+
+        yield return new WaitForSeconds(rotationTime + 0.1f);
+
+        switch(move.side){
+            case 0://top
+                click = new Coords(move.index + 1, dimensions - 1);
+                end = taps.FindResultingVector(click.x, click.y);
+                if(end != Vector2.zero){
+                    Move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+                }
+                break;
+            case 1://right
+                click = new Coords(dimensions - 1, dimensions - 2 - move.index);
+                end = taps.FindResultingVector(click.x, click.y);
+                if(end != Vector2.zero){
+                    Move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+                }
+                break;
+            case 2://bottom
+                click = new Coords(dimensions - 2 - move.index, 0);
+                end = taps.FindResultingVector(click.x, click.y);
+                if(end != Vector2.zero){
+                    Move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+                }
+                break;
+            default://left
+                click = new Coords(0, move.index + 1);
+                end = taps.FindResultingVector(click.x, click.y);
+                if(end != Vector2.zero){
+                    Move(new Coords(click.x, click.y), new Coords((int)end.x, (int)end.y));
+                }
+                break;
+        }
+        canMakeAIMove = true;
     }
 }

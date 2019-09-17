@@ -27,7 +27,7 @@ public class SpawnWorkflow : MonoBehaviour {
 		int rand = Random.Range(0, total);
 		int max = tendencies[0];
 		int k = 0;
-		if(max > rand)
+		if(max >= rand)
 			return k;
 		while(rand >= max){
 			k++;
@@ -57,8 +57,8 @@ public class SpawnWorkflow : MonoBehaviour {
 
     public void setTendencies(int normalTend, int armorTend, int splitterTend) {
         tendencies[0] = normalTend;
-        tendencies[1] = armorTend;
-        tendencies[2] = splitterTend;
+        // tendencies[1] = armorTend;
+        // tendencies[2] = splitterTend;
         sumTotal();
     }
 
