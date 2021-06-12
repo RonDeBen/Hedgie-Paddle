@@ -12,26 +12,46 @@ public class SpawnWorkflow : MonoBehaviour {
 	private const int FIREBALL = 5;
 	private const int BOMB = 6;
 
-	public List<int> tendencies;
+	public List<int> innerTendencies;
+	public List<int> outerTendencies;
 
-	private int total, level;
-    private int armorMin, armorMax, splitterMin, splitterMax;
+	private int innerTotal, outerTotal, level;
+    public int armorMin, armorMax, splitterMin, splitterMax;
+
 	public void sumTotal(){
-        total = 0;
-		for(int k = 0; k < tendencies.Count; k++){
-			total += tendencies[k];
+        innerTotal = 0;
+		outerTotal = 0;
+		for(int k = 0; k < innerTendencies.Count; k++){
+			innerTotal += innerTendencies[k];
+		}
+
+		for(int k = 0; k < outerTendencies.Count; k++){
+			outerTotal += outerTendencies[k];
 		}
 	}
 
-	public int pickHedgieType(){
-		int rand = Random.Range(0, total);
-		int max = tendencies[0];
+	public int pickHedgieTypeOuter(){
+		int rand = Random.Range(0, outerTotal);
+		int max = outerTendencies[0];
 		int k = 0;
-		if(max >= rand)
+		if(max > rand)
 			return k;
 		while(rand >= max){
 			k++;
-			max += tendencies[k];
+			max += outerTendencies[k];
+		}
+		return k;
+	}
+
+	public int PickHedgieTypeInner(){
+		int rand = Random.Range(0, innerTotal);
+		int max = innerTendencies[0];
+		int k = 0;
+		if(max > rand)
+			return k;
+		while(rand >= max){
+			k++;
+			max += innerTendencies[k];
 		}
 		return k;
 	}
@@ -48,18 +68,16 @@ public class SpawnWorkflow : MonoBehaviour {
 		}
 	}
 
-    public void setRange(int armorMin, int armorMax, int splitterMin, int splitterMax) {
-        this.armorMin = armorMin;
-        this.armorMax = armorMax;
-        this.splitterMin = splitterMin;
-        this.splitterMax = splitterMax;
-    }
+	public void SetTendencies(){
+		sumTotal();
+	}
 
-    public void setTendencies(int normalTend, int armorTend, int splitterTend) {
-        tendencies[0] = normalTend;
-        // tendencies[1] = armorTend;
-        // tendencies[2] = splitterTend;
-        sumTotal();
-    }
+	public void SetPercent(float percent){
+		int half_percent = (int)(Mathf.Clamp(percent / 2f, 0f, 100f));
+		innerTendencies[1] = half_percent;
+		innerTendencies[2] = half_percent;
+		innerTendencies[0] = 100 - (half_percent + half_percent);
+		sumTotal();
+	}
 
 }

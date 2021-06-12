@@ -27,6 +27,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         if (Input.GetKeyDown(KeyCode.Z)){
+            gc.SetBoardState();
             EntropyTree.instance.Debugging();
             // EntropyTree.instance.FindNextMove();
             // gc.MakeAIMove(EntropyTree.instance.FindNextMove());

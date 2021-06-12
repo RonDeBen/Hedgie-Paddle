@@ -6,36 +6,117 @@ using System.Linq;
 public class Node{
 	public float entropy;
 	public Dictionary<Coords, Hedgehog> boardState;
-	public int[] leftSide, rightSide, topSide, bottomSide;
-	public int depth, moveColor;
+	// public int[] leftSide, rightSide, topSide, bottomSide;
+	public int[][] allSides;
+	public int depth, maxDepth, moveColor, previousRotation;
 	public Coords newPos;
 	public Move move;
+	public Node parentNode;
 
-	public Node(Dictionary<Coords, Hedgehog> qboardState, Move move, int[] leftSide, int[] rightSide, int[] topSide, int[] bottomSide){
-		depth = 1;//to change to actual depth later
+	public Node(){
+		entropy = float.MaxValue;
+		depth = -1;
+	}
+
+	public Node(Node parentNode, 
+				int depth, 
+				int maxDepth,
+				Dictionary<Coords, Hedgehog> boardState, 
+				Move move,
+                int[] topSide,
+				int[] rightSide, 
+				int[] bottomSide,
+				int[] leftSide){
+		this.parentNode = parentNode;
+		this.depth = depth;
+		this.maxDepth = maxDepth;
+		this.boardState = boardState;
 		this.move = move;
-		this.leftSide = CloneArray(leftSide);
-		this.rightSide = CloneArray(rightSide);
-		this.topSide = CloneArray(topSide);
-		this.bottomSide = CloneArray(bottomSide);
 
+		allSides = new int[][] {topSide, rightSide, bottomSide, leftSide};
+
+
+		//if the node is flagged set it up for debugging stuff
 		if(this.move.Equals(new Move(-1,-1,-1))){
-			boardState = CloneDictionary(qboardState);
+			this.boardState = AIPops.instance.Dumb(boardState);
 			DetermineDegreesOfFreedom();
 			entropy = Entropy();
-			Debugging();
 		}else{
-			boardState = CloneDictionary(qboardState);
 			GetResultingBoardState();
 			DetermineDegreesOfFreedom();
 			entropy = Entropy();
 		}
 	}
 
+	public Move[] GetResultantMoves(){
+		Move[] moves = new Move[maxDepth];
+		Node previousNode = this;
+		while(previousNode.depth != -1){
+			moves[previousNode.depth - 1] = previousNode.move;
+			previousNode = previousNode.parentNode;
+		}
+		// Debug.Log(moves[0].ToString());
+		// Debug.Log(moves[1].ToString());
+		return moves;
+	}
+
+
+	//make sure that this gives the entropy
+	public Node FinalEntropyNode(){
+		if(depth == maxDepth){
+			return this;
+		}else{
+			Node bestChildNode = new Node();
+			Node finalEntropyNode = new Node();
+
+			int[] topSide, rightSide, bottomSide, leftSide;
+			topSide = allSides[mod(0 - move.rotation, 4)];
+            rightSide = allSides[mod(1 - move.rotation, 4)];
+            bottomSide = allSides[mod(2 - move.rotation, 4)];
+            leftSide = allSides[mod(3 - move.rotation, 4)];
+
+			foreach(Move newMove in EntropyTree.FindAllMoves(boardState)){
+				Node newChildNode = new Node(this, (depth + 1), maxDepth,CloneDictionary(boardState), newMove, CloneArray(topSide), CloneArray(rightSide), CloneArray(bottomSide), CloneArray(leftSide));
+				finalEntropyNode = newChildNode.FinalEntropyNode();
+				if(finalEntropyNode.entropy < bestChildNode.entropy){
+					bestChildNode = finalEntropyNode;
+				}
+			}
+			return bestChildNode;
+		}
+	}
+
+	public float FinalEntropy(){
+		if(depth == maxDepth){
+			return entropy;
+		}else{
+			float bestFutureEntropy = float.MaxValue;
+			float tempEntropy = float.MaxValue;
+			
+			int[] topSide, rightSide, bottomSide, leftSide;
+            topSide = allSides[mod(0 - move.rotation, 4)];
+            rightSide = allSides[mod(1 - move.rotation, 4)];
+            bottomSide = allSides[mod(2 - move.rotation, 4)];
+            leftSide = allSides[mod(3 - move.rotation, 4)];
+
+			foreach(Move newMove in EntropyTree.FindAllMoves(boardState)){
+				Node newChildNode = new Node(this, (depth + 1), maxDepth, CloneDictionary(boardState), newMove, CloneArray(topSide), CloneArray(rightSide), CloneArray(bottomSide), CloneArray(leftSide));
+				tempEntropy = newChildNode.FinalEntropy();
+				if(tempEntropy == 0){
+					return 0;
+				}
+				if(tempEntropy < bestFutureEntropy){
+					bestFutureEntropy = tempEntropy;
+				}
+			}
+			return bestFutureEntropy;
+		}
+	}
+
 	private Dictionary<Coords, Hedgehog> CloneDictionary(Dictionary<Coords, Hedgehog> startDict){
 		Dictionary<Coords, Hedgehog> newDict = new Dictionary<Coords, Hedgehog>();
 		foreach(KeyValuePair<Coords, Hedgehog> kvp in startDict){
-			newDict.Add(new Coords(kvp.Key.x, kvp.Key.y), new Hedgehog(kvp.Value.color));
+			newDict.Add(new Coords(kvp.Key.x, kvp.Key.y), new Hedgehog(kvp.Value.color, kvp.Value.health, kvp.Value.type));
 		}
 		return newDict;
 	}
@@ -48,26 +129,52 @@ public class Node{
 		return newArray;
 	}
 
+	private Move CloneMove(Move move){
+		return new Move(move.side, move.rotation, move.index);
+	}
+
 	public override string ToString(){
 		return ("Entropy: " + entropy + ", Move: " + move.ToString() + " color: " + NumToColor(moveColor) + " Count: " + boardState.Count);
 	} 
 
-	public Node(){
-		entropy = float.MaxValue;
-		// entropy = 0;
+	private float Prob(Hedgehog heg){
+		//1 - (5/6)^#num_rolls
+		return Prob(heg.d, heg.health);
 	}
 
-	private float Prob(int d){
-		return (1 - Mathf.Pow(0.83f, d));
+	private float Prob(int d, int health){
+		return Mathf.Pow((1 - Mathf.Pow(0.83f, d)), health);
 	}
 
 	private float Entropy(){
 		float sum = 0;
+		Dictionary<int, List<Hedgehog>> split_dict = new Dictionary<int, List<Hedgehog>>();
 		foreach(KeyValuePair<Coords, Hedgehog> element in boardState){
-			if(element.Value.d == 0){
-				sum += 1; 
+			if(element.Value.split_id == -1){
+				if(element.Value.d == 0){
+					sum += 1; 
+				}else{
+					float p = Prob(element.Value);
+					sum -= Mathf.Log(p, 10);
+				}
 			}else{
-				float p = Prob(element.Value.d);
+				try{
+                    split_dict[element.Value.split_id].Add(element.Value);
+                }catch (KeyNotFoundException){
+                    List<Hedgehog> newList = new List<Hedgehog>() {element.Value};
+                    split_dict.Add(element.Value.split_id, newList);
+                }
+			}
+		}
+		foreach(KeyValuePair<int, List<Hedgehog>> entry in split_dict){
+			int split_d = 0;
+			foreach(Hedgehog heg in entry.Value){
+				split_d += heg.d;
+			}
+			if(split_d == 0){
+				sum += entry.Value.Count;
+			}else{
+				float p = Prob(split_d, entry.Value[0].health);
 				sum -= Mathf.Log(p, 10);
 			}
 		}
@@ -127,116 +234,147 @@ public class Node{
 		}
 	}
 
+	public int HedgieCount(){
+		return boardState.Count();
+	}
+
 	int mod(int x, int m) {
 	    return (x%m + m)%m;
 	}
 
-	private void GetResultingBoardState(){
-		// Dictionary<Coords, Hedgehog> startingBoardState = CloneDictionary(newBoardState);
-		int dimensions = EntropyTree.dimensions;
-		// Debug.Log(move.ToString());
-		switch(mod((move.side - move.rotation), 4)){ //applys rotation so our switch statement goes back to side numbering convention
+	public void GetResultingBoardState(){
+        int dimensions = EntropyTree.dimensions;
+		int trueRotation = mod((move.side - move.rotation), 4);//applies rotation so our switch statement goes back to side numbering convention
+        moveColor = allSides[trueRotation][move.index];
+        switch(move.side){ 
 			case 0:{ // top
-				moveColor = topSide[move.index];
-				topSide[move.index] = -depth;
-				int max = 0;
-				foreach(Coords pos in boardState.Keys){
-					if(pos.x == move.index && pos.y > max){
-						max = pos.y;
+				if(moveColor > -1){
+					allSides[trueRotation][move.index] = -depth;
+					int max = 0;
+					foreach(Coords pos in boardState.Keys){
+						if(pos.x == move.index && pos.y > max){
+							max = pos.y;
+						}
 					}
+					newPos = new Coords(move.index, max + 1);
+					boardState.Add(newPos, new Hedgehog(moveColor, 1, 0));//change if outer hedgies can be special
+					RemoveMatchedColors(newPos);
 				}
-				newPos = new Coords(move.index, max + 1);
-				// Debug.Log(newPos);
-				boardState.Add(newPos, new Hedgehog(moveColor));
-				RemoveMatchedColors(newPos);
 				break;
 			}
 			case 1:{ // right
 				int adjustedIndex = dimensions - move.index - 1;//it's wonky for rotation reasons
-				moveColor = rightSide[move.index];
-				rightSide[move.index] = -depth;
-				int max = 0;
-
-				foreach(Coords pos in boardState.Keys){
-					if(pos.y == adjustedIndex && pos.x > max){
-						max = pos.x;
+				if(moveColor > -1){
+					allSides[trueRotation][move.index] = -depth;
+					int max = 0;
+					foreach(Coords pos in boardState.Keys){
+						if(pos.y == adjustedIndex && pos.x > max){
+							max = pos.x;
+						}
 					}
+					newPos = new Coords(max + 1, adjustedIndex);
+					boardState.Add(newPos, new Hedgehog(moveColor, 1, 0));//change if outer hedgies can be special
+					RemoveMatchedColors(newPos);
 				}
-				newPos = new Coords(max + 1, adjustedIndex);
-				// Debug.Log(newPos);
-				boardState.Add(newPos, new Hedgehog(moveColor));
-				RemoveMatchedColors(newPos);
 				break;
 			}
 			case 2: {// bottom
 				int adjustedIndex = dimensions - move.index - 1;//it's wonky for rotation reasons
-				moveColor = bottomSide[move.index];
-				bottomSide[move.index] = -depth;
-				int min = dimensions;
-				foreach(Coords pos in boardState.Keys){
-					if(pos.x == adjustedIndex && pos.y < min){
-						min = pos.y;
+				if(moveColor > -1){
+					allSides[trueRotation][move.index] = -depth;
+					int min = dimensions;
+					foreach(Coords pos in boardState.Keys){
+						if(pos.x == adjustedIndex && pos.y < min){
+							min = pos.y;
+						}
 					}
+					newPos = new Coords(adjustedIndex, min - 1);
+					boardState.Add(newPos, new Hedgehog(moveColor, 1, 0));//change if outer hedgies can be special
+					RemoveMatchedColors(newPos);
 				}
-				newPos = new Coords(adjustedIndex, min - 1);
-				// Debug.Log(newPos);
-				boardState.Add(newPos, new Hedgehog(moveColor));
-				RemoveMatchedColors(newPos);
 				break;
 			}
 			case 3: {// left
-				moveColor = leftSide[move.index];
-				leftSide[move.index] = -depth;
-				int min = dimensions;
-				foreach(Coords pos in boardState.Keys){
-					if(pos.y == move.index && pos.x < min){
-						min = pos.x;
+				if(moveColor > -1){
+					allSides[trueRotation][move.index] = -depth;
+					int min = dimensions;
+					foreach(Coords pos in boardState.Keys){
+						if(pos.y == move.index && pos.x < min){
+							min = pos.x;
+						}
 					}
+					newPos = new Coords(min - 1, move.index);
+					boardState.Add(newPos, new Hedgehog(moveColor, 1, 0));//change if outer hedgies can be special
+					RemoveMatchedColors(newPos);
 				}
-				newPos = new Coords(min - 1, move.index);
-				// Debug.Log(newPos)
-				boardState.Add(newPos, new Hedgehog(moveColor));
-				RemoveMatchedColors(newPos);
 				break;
 			}
 		}
 	}
 
-	//takes the dictionary with new moves, and removes colors, if there was a match
 	public void RemoveMatchedColors(Coords newPos){
+		boardState = AIPops.instance.GetResultingBoardState(boardState, newPos);
+	}
 
-		int colorToMatch = boardState[newPos].color;
-		bool gotAMatch = false;
+	//takes the dictionary with new moves, and removes colors, if there was a match
+	// public void RemoveMatchedColors(Coords newPos){
+	// 	if(EntropyTree.instance.UseAIPops){
+	// 		boardState = AIPops.instance.GetResultingBoardState(boardState, newPos);
+	// 	}else{
+	// 		int colorToMatch = boardState[newPos].color;
+	// 		bool gotAMatch = false;
+	// 		Dictionary<Coords, Hedgehog> boardCopy = CloneDictionary(boardState);
 
-        if(boardState.ContainsKey(new Coords(newPos.x - 1, newPos.y))){
-			if(boardState[new Coords(newPos.x - 1, newPos.y)].color == colorToMatch){
-				gotAMatch = true;
-				boardState.Remove(new Coords(newPos.x - 1, newPos.y));
-			}
-		}
-		if(boardState.ContainsKey(new Coords(newPos.x + 1, newPos.y))){
-			if(boardState[new Coords(newPos.x + 1, newPos.y)].color == colorToMatch){
-				gotAMatch = true;
-				boardState.Remove(new Coords(newPos.x + 1, newPos.y));
-			}
-		}
-		if(boardState.ContainsKey(new Coords(newPos.x, newPos.y - 1))){
-			if(boardState[new Coords(newPos.x, newPos.y - 1)].color == colorToMatch){
-				gotAMatch = true;
-				boardState.Remove(new Coords(newPos.x, newPos.y - 1));
-			}
-		}
-		if(boardState.ContainsKey(new Coords(newPos.x, newPos.y + 1))){
-			if(boardState[new Coords(newPos.x, newPos.y + 1)].color == colorToMatch){
-				gotAMatch = true;
-				boardState.Remove(new Coords(newPos.x, newPos.y - 1));
-			}
-		}
+	// 		if(boardState.ContainsKey(new Coords(newPos.x - 1, newPos.y))){
+	// 			if(boardState[new Coords(newPos.x - 1, newPos.y)].color == colorToMatch){
+	// 				gotAMatch = true;
+	// 				if(boardState[new Coords(newPos.x - 1, newPos.y)].health > 1){
+	// 					boardState[new Coords(newPos.x - 1, newPos.y)].TakeDamage();
+	// 				}else{
+	// 					boardState.Remove(new Coords(newPos.x - 1, newPos.y));
+	// 				}
+	// 			}
+	// 		}
+	// 		if(boardState.ContainsKey(new Coords(newPos.x + 1, newPos.y))){
+	// 			if(boardState[new Coords(newPos.x + 1, newPos.y)].color == colorToMatch){
+	// 				gotAMatch = true;
+	// 				if(boardState[new Coords(newPos.x + 1, newPos.y)].health > 1){
+	// 					boardState[new Coords(newPos.x + 1, newPos.y)].TakeDamage();
+	// 				}else{
+	// 					boardState.Remove(new Coords(newPos.x + 1, newPos.y));
+	// 				}
+	// 			}
+	// 		}
+	// 		if(boardState.ContainsKey(new Coords(newPos.x, newPos.y - 1))){
+	// 			if(boardState[new Coords(newPos.x, newPos.y - 1)].color == colorToMatch){
+	// 				gotAMatch = true;
+	// 				if(boardState[new Coords(newPos.x, newPos.y - 1)].health > 1){
+	// 					boardState[new Coords(newPos.x, newPos.y - 1)].TakeDamage();
+	// 				}else{
+	// 					boardState.Remove(new Coords(newPos.x, newPos.y - 1));
+	// 				}
+	// 			}
+	// 		}
+	// 		if(boardState.ContainsKey(new Coords(newPos.x, newPos.y + 1))){
+	// 			if(boardState[new Coords(newPos.x, newPos.y + 1)].color == colorToMatch){
+	// 				gotAMatch = true;
+	// 				if(boardState[new Coords(newPos.x, newPos.y + 1)].health > 1){
+	// 					boardState[new Coords(newPos.x, newPos.y + 1)].TakeDamage();
+	// 				}else{
+	// 					boardState.Remove(new Coords(newPos.x, newPos.y + 1));
+	// 				}
+	// 			}
+	// 		}
 
-        if(gotAMatch){
-        	boardState.Remove(newPos);
-        }
-    }
+	// 		if(gotAMatch){
+	// 			if(boardState[newPos].health > 1){
+	// 				boardState[newPos].TakeDamage();
+	// 			}else{
+	// 				boardState.Remove(newPos);
+	// 			}
+	// 		}
+	// 	}
+    // }
 
     public void Debugging(){
 		// foreach(KeyValuePair<Coords, Hedgehog> kvp in boardState){
@@ -250,6 +388,10 @@ public class Node{
 		// 	Debug.Log(k + ": " + NumToColor(bottomSide[k]));
 		// }
     }
+
+	public int GetNumPossibleMoves(){
+		return EntropyTree.FindAllMoves(boardState).Count;
+	}
 
     public string NumToColor(int num){
 		switch(num){

@@ -51,7 +51,7 @@ public class MenuTexts : MonoBehaviour {
         if(splitterMax == 0)
             splitterMax = 3;
 
-        gc.setParams(dimensions, innerHedgies, normalTend, armorTend, splitterTend, armorMin, splitterMin, armorMax, splitterMax);
+        // gc.setParams(dimensions, innerHedgies, normalTend, armorTend, splitterTend, armorMin, splitterMin, armorMax, splitterMax);
         gc.MakeGrid();
         isActive = false;
         gameObject.SetActive(false);

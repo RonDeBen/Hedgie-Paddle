@@ -1,11 +1,10 @@
 using UnityEngine;
 using System.Collections;
 
-public class Hedgie 
-{
+public class Hedgie : MonoBehaviour{
     private Sprite s;
     private GameObject go;//gameObject associated with Hedgie
-    private int color, type, health;//color of the ball, and type of the ball
+    public int color, type, health;//color of the ball, and type of the ball
     private SpriteRenderer sprender;//use this to turn off hedgies not in use
     private TextMesh healthText;
     public Hedgie()
@@ -15,7 +14,6 @@ public class Hedgie
         healthText = go.GetComponentInChildren<TextMesh>();
         color = -1;
         type = -1;
-        s = new Sprite();
         sprender.enabled = true;
     }
 
@@ -156,7 +154,7 @@ public class Hedgie
         }
     }
 
-    public int loseHealh(int damage) {
+    public int loseHealth(int damage) {
         health += damage;
         if (health > 1) {
             healthText.text = health.ToString();
@@ -178,6 +176,10 @@ public class Hedgie
         color = -1;
         sprender.enabled = false;
         return -1;
+    }
+
+    public string ToString(){
+        return ("color: " + EntropyTree.instance.NumToColor(color) + ", type: " + type + ", health: " + health);
     }
 }
 

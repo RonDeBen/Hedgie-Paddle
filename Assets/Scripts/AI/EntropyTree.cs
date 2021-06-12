@@ -10,6 +10,7 @@ public class EntropyTree : MonoBehaviour {
 	public Dictionary<Coords, Hedgehog> currentBoardState = new Dictionary<Coords, Hedgehog>();
 	public static int[] leftSide, rightSide, topSide, bottomSide;
 	private int colors = 6;
+	public bool UseAIPops = false;
 	// private AIPops aip;
 
 	// Use this for initialization
@@ -21,11 +22,11 @@ public class EntropyTree : MonoBehaviour {
 	}
 
 	//used to keep boardstate current
-	public void AddHedgehog(int x, int y, int color){
+	public void AddHedgehog(int x, int y, int color, int health, int type){
 		// Debug.Log((x - 1) + ", " + (y - 1));
-		// if(!currentBoardState.ContainsKey(new Coords(x, y))){
-			currentBoardState.Add(new Coords(x - 1, y - 1), new Hedgehog(color));
-		// }
+		if(!currentBoardState.ContainsKey(new Coords(x - 1, y - 1))){
+			currentBoardState.Add(new Coords(x - 1, y - 1), new Hedgehog(color, health, type));
+		}
 	}
 
 	//used to keep boardstate current
@@ -53,28 +54,48 @@ public class EntropyTree : MonoBehaviour {
 		rightSide = new int[dimensions];
 		topSide = new int[dimensions];
 		bottomSide = new int[dimensions];
+
 	}
 
-	public Move FindNextMove(){
-		return FindNextMove(currentBoardState);
-	}
+	public List<Move> FindMoves(Hedgie[,] hg){
+		SetBoardState(hg);
+		int possibleMoves = GetNumPossibleMoves();
 
-	public Move FindNextMove(Dictionary<Coords, Hedgehog> boardState){
-		Node bestNode = new Node();
-		foreach(Move move in FindAllMoves(boardState)){
-			//change this later when you add depth
-			Node newNode = new Node(boardState, move, leftSide, rightSide, topSide, bottomSide);
-			if(newNode.entropy < bestNode.entropy){
-				bestNode = newNode;
+		if(possibleMoves > 0){
+			float currentEntropy = GetCurrentEntropy();
+			Node bestNode = FindNextNodeWithDepth(1, currentEntropy);
+			if(bestNode.entropy <= currentEntropy || bestNode.GetNumPossibleMoves() == 0){
+				return new List<Move> { bestNode.move };
+			}else{
+				bestNode = FindNextNodeWithDepth(2, currentEntropy);
+				if(bestNode.entropy <= currentEntropy || bestNode.GetNumPossibleMoves() == 0){
+					return new List<Move> { bestNode.parentNode.move, bestNode.move };
+				}else{
+					bestNode = FindNextNodeWithDepth(3, currentEntropy);
+					return new List<Move> {bestNode.parentNode.parentNode.move, bestNode.parentNode.move, bestNode.move};
+				}
 			}
 		}
-		// Debug.Log("Best: " + bestNode.ToString());
-		return bestNode.move;
+		return null;
 	}
 
-	public List<Move> FindAllMoves(Dictionary<Coords, Hedgehog> boardState){
+    public Node FindNextNodeWithDepth(int depth, float currentEntropy) {
+        Node bestNode = new Node();
+        foreach (Move move in FindAllMoves(currentBoardState)) {
+            Node newNode = new Node(new Node(), 1, depth, CloneDictionary(currentBoardState), move, CloneArray(topSide), CloneArray(rightSide), CloneArray(bottomSide), CloneArray(leftSide));
+			Node finalEntropyNode = newNode.FinalEntropyNode();
+            if (bestNode.entropy > finalEntropyNode.entropy) {
+                bestNode = finalEntropyNode;
+            }
+        }
+        // Debug.Log(bestNode.move + " => " + bestNode.HedgieCount());
+        return bestNode;
+    }
+
+	public static List<Move> FindAllMoves(Dictionary<Coords, Hedgehog> boardState){
 		List<Move> allMoves = new List<Move>();
 		foreach(Coords checkHog in boardState.Keys){
+			// Debug.Log(checkHog.x + ", " + checkHog.y);
 			bool hasMoveLeft = true;
 			bool hasMoveRight = true;
 			bool hasMoveUp = true;
@@ -101,28 +122,28 @@ public class EntropyTree : MonoBehaviour {
 				if(hasMoveLeft){
 					allMoves.AddRange(new List<Move>() {new Move(3, 0, checkHog.y),
 														new Move(3, 1, checkHog.y),
-														new Move(3, -1, checkHog.y),
+														new Move(3, 3, checkHog.y),
 														new Move(3, 2, checkHog.y)});
 					// allMoves.Add(new Move(3, 0, checkHog.y));
 				}
 				if(hasMoveRight){
 					allMoves.AddRange(new List<Move>() {new Move(1, 0, dimensions - checkHog.y - 1),
 														new Move(1, 1, dimensions - checkHog.y - 1),
-														new Move(1, -1, dimensions - checkHog.y - 1),
+														new Move(1, 3, dimensions - checkHog.y - 1),
 														new Move(1, 2, dimensions - checkHog.y - 1)});
 					// allMoves.Add(new Move(1, 0, dimensions - checkHog.y - 1));
 				}
 				if(hasMoveUp){
 					allMoves.AddRange(new List<Move>() {new Move(0, 0, checkHog.x),
 														new Move(0, 1, checkHog.x),
-														new Move(0, -1, checkHog.x),
+														new Move(0, 3, checkHog.x),
 														new Move(0, 2, checkHog.x)});
 					// allMoves.Add(new Move(0, 0, checkHog.x));
 				}
 				if(hasMoveDown){
 					allMoves.AddRange(new List<Move>() {new Move(2, 0, dimensions - checkHog.x - 1),
 														new Move(2, 1, dimensions - checkHog.x - 1),
-														new Move(2, -1, dimensions - checkHog.x - 1),
+														new Move(2, 3, dimensions - checkHog.x - 1),
 														new Move(2, 2, dimensions - checkHog.x - 1)});	
 					// allMoves.Add(new Move(2, 0, dimensions - checkHog.x - 1));
 				}
@@ -131,16 +152,31 @@ public class EntropyTree : MonoBehaviour {
 		// foreach(Move move in allMoves){
 		// 	Debug.Log(move.ToString());
 		// }
+		// Debug.Log(allMoves.Count);
 		return allMoves;
+	}
+
+	public int GetNumPossibleMoves(){
+		// Debug.Log(FindAllMoves(currentBoardState).Count);
+		return FindAllMoves(currentBoardState).Count;
+	}
+
+	public float GetCurrentEntropy(){
+        Node tempParent = new Node();
+        Node newNode = new Node(tempParent, 0, 0, currentBoardState, new Move(-1, -1, -1), topSide, rightSide, bottomSide, leftSide);
+		return newNode.entropy;
 	}
 
 	public void Debugging(){
 		// for(int k = 0; k < dimensions; k++){
 		// 	Debug.Log(k + ": " + NumToColor(topSide[k]));
 		// }
-		
-		Node newNode = new Node(currentBoardState, new Move(-1,-1,-1), leftSide, rightSide, topSide, bottomSide);
-		newNode.DetermineDegreesOfFreedom();
+		// Debug.Log(GetNumPossibleMoves());
+		// Debug.Log(currentBoardState.Count);
+		Node tempParent = new Node();
+		Node newNode = new Node(tempParent, 0, 0, currentBoardState, new Move(-1,-1,-1), topSide, rightSide, bottomSide, leftSide);
+		newNode.Debugging();
+		// newNode.DetermineDegreesOfFreedom();
 	}
 
 	public void DisplayHedgehogs(){
@@ -168,4 +204,35 @@ public class EntropyTree : MonoBehaviour {
 
 		}
 	}
+
+    private Dictionary<Coords, Hedgehog> CloneDictionary(Dictionary<Coords, Hedgehog> startDict) {
+        Dictionary<Coords, Hedgehog> newDict = new Dictionary<Coords, Hedgehog>();
+        foreach (KeyValuePair<Coords, Hedgehog> kvp in startDict) {
+            newDict.Add(new Coords(kvp.Key.x, kvp.Key.y), new Hedgehog(kvp.Value.color, kvp.Value.health, kvp.Value.type));
+        }
+        return newDict;
+    }
+
+    private int[] CloneArray(int[] startArray) {
+        int[] newArray = new int[startArray.Length];
+        for (int k = 0; k < startArray.Length; k++) {
+            newArray[k] = startArray[k];
+        }
+        return newArray;
+    }
+
+	public int GetBallCount(){
+		return currentBoardState.Count;
+	}
+
+	public void SetBoardState(Hedgie[,] h){
+		currentBoardState.Clear();
+		for(int x = 1; x < dimensions + 1; x++){
+			for(int y = 1; y < dimensions + 1; y++){
+				if(h[x,y].color != -1){
+					currentBoardState.Add(new Coords(x - 1, y - 1), new Hedgehog(h[x,y].color, h[x,y].health, h[x,y].type));
+				}
+			}
+		}
+    }
 }

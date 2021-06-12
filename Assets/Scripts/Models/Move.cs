@@ -26,6 +26,10 @@ public class Move {
         return side.GetHashCode() ^ rotation.GetHashCode() ^ index.GetHashCode();
     } 
 
+	public int GetRotation(){
+		return rotation;
+	}
+
 	private string SideToString(int side){
 		switch(side){
 			case 0:
